@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Invitation
+{% endblock %}
+
+{% block main %}
+<form action="/invitation" method="post">
+    <div>
+        <a href="/">
+            <img src="../static/invitation.jpg" width="640" alt="Invitation Image">
+        </a>
+    </div>
+    <p></p>
+    <div class="mb-3">
+        <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="username" placeholder="Your name" type="text">
+    </div>
+    <div>
+        <p></p>
+        <button class="btn btn-primary" type="submit">RSVP</button>
+    </div>
+</form>
+{% endblock %}
