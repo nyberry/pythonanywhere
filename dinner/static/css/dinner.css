@@ -66,3 +66,9 @@ img {
     cursor: pointer; /* Cursor style */
     box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.5); /* Box shadow for a slight lift effect */
 }
+
+
+.left-aligned-content {
+    text-align: left; /* Left-align text */
+    padding: 10px; /* Example padding */
+}

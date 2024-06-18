@@ -1,0 +1,19 @@
+{% extends "dinner/layout.html" %}
+{% load static %}
+{% block title %}
+    Development
+{% endblock %}
+{% block main %}
+<div class="centered-text">
+    <div class="left-aligned-content">
+        {{ html_content|safe }}
+    </div>
+    <br>
+    <div class="text-center">
+        <br>
+        <div class="d-flex flex-column align-items-center mt-3">
+            <a href="/" class="btn mb-2 w-50" style="background-color: pink; color: black;">Home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

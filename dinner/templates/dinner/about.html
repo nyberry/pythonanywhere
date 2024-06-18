@@ -1,0 +1,28 @@
+{% extends "dinner/layout.html" %}
+{% load static %}
+{% block title %}
+    About
+{% endblock %}
+{% block main %}
+<div class="text-center">
+    <div>
+        <h3>A guessing game for 4-10 players</h3>
+        <br>
+        <h1>How it works</h2>
+        Once you join the game, you are asked a question.
+        When all players have given an answer, the game begins.
+        All the answers are displayed, anonymously.
+        Taking it in turns, the players have to guess which player gave each answer.
+        Once a player and their answer have been correctly guessed, that player is "out".
+        When only one player remains, they are the winner.
+    </div>
+    <br>
+    <br>
+    <a href="/">
+        <img src="{% static 'images/cafe.jpg' %}" alt="return to welcome">
+    </a>
+    <div class="d-flex flex-column align-items-center mt-3">
+        <a href="/" class="btn mb-2 w-50" style="background-color: pink; color: black;">Home</a>
+    </div>
+</div>
+{% endblock %}
