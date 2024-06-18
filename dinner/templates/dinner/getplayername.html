@@ -1,0 +1,23 @@
+{% extends "dinner/layout.html" %}
+{% load static %}
+
+{% block title %}
+    get player's name
+{% endblock %}
+
+{% block main %}
+<form action="{% url 'getplayername' %}" method="post">
+    {% csrf_token %}
+    <div class="text-center">
+        <img src="{% static 'images/dinnertable.jpg' %}" class="img-fluid" alt="table Image">
+        <br><br>
+        <div class="d-flex flex-column align-items-center mt-3">
+            <div class="mb-3">
+                <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="username" placeholder="Your name" type="text">
+            </div>
+            <button type="submit" name="action" value="next" class="btn mb-2 w-50" style="background-color: darkgreen; color: white;">Next</button>
+            <button type="submit" name="action" value="home" class="btn mb-2 w-50" style="background-color: pink; color: black;">Home</button>
+        </div>
+    </div>
+</form>
+{% endblock %}

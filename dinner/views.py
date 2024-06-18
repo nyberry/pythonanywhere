@@ -4,7 +4,20 @@ from django.http import HttpResponse
 import markdown2
 import os
 
+class Player:
+    def __init__(self, id, name, ip, host=False, guessed=False):
+        self.id = id
+        self.name = name
+        self.ip = ip
+        self.host = host
+        self.guessed = guessed
+    def __str__(self):
+        return f"Player(id={self.id}, name='{self.name}', ip='{self.ip}', host={self.host}, guessed={self.guessed})"
+
+
 game_started=False
+players=[]
+
 
 def apology(request, message, code=400):
     return render (request, 'apology.html', {"top":code, "bottom":message})
@@ -18,7 +31,7 @@ def get_client_ip(request):
     return ip
 
 def gethostname(request):
-    global game_started
+    global game_started, players
     if request.method == "POST":
         action = request.POST.get('action')
         if action == 'next':
@@ -29,16 +42,38 @@ def gethostname(request):
                 return apology(request, f'{error}', 400)
             else:
                 user_ip = get_client_ip(request)
-                print(f"User IP address: {user_ip}")
-                return HttpResponse(f'Hello {username} your IP address is {user_ip}')
+                players += [Player(id=len(players), name=username, ip=user_ip, host=True, guessed=False)]
+                print (players[0])
+                return HttpResponse(f'Hello {username} your details are: {players[0]}')
         elif action == 'home':
             # Handle 'home' action
             game_started = False
             return redirect(reverse('welcome'))
-
     else:
-        # display the form to get the user request
+        # display the form to get the host name request
         return render (request, 'dinner/gethostname.html')
+
+def getplayername(request):
+    global game_started, players
+    if request.method == "POST":
+        action = request.POST.get('action')
+        if action == 'next':
+            # handle player username provided
+            username = request.POST.get("username")
+            username, error = validate_username(username)
+            if error:
+                return apology(request, f'{error}', 400)
+            else:
+                user_ip = get_client_ip(request)
+                players += [Player(id=len(players), name=username, ip=user_ip, host=False, guessed=False)]
+                return HttpResponse(f'Hello {username} your details are: {players[len(players)-1]}')
+        elif action == 'home':
+            # Handle 'home' action
+            return redirect(reverse('welcome'))
+    else:
+        # display the form to get the host name request
+        return render (request, 'dinner/getplayername.html')
+
     
 def validate_username(username):
     # check a username was provided
@@ -64,7 +99,7 @@ def welcome(request):
         return redirect(reverse('gethostname'))
     elif action == "join" or (action =="start" and game_started != False):
         # Handle the logic for joining an existing game
-        return HttpResponse("Joining the game...")
+        return redirect(reverse('getplayername'))
     elif action == "about":
         # Show info about the game
         return render(request, 'dinner/about.html')
