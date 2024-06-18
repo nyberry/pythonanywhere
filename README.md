@@ -8,7 +8,7 @@
 - Once a player and their answer have been correctly guessed, that player is "out".
 - When only one player remains, they are the winner.
 
-![image info](static/images/cafe.jpg)
+![image info](static/images/invitation.jpg)
 
 # Development ideas & psuedocode
 
@@ -37,6 +37,8 @@
 - if the player is not the guesser, they will see a message player is guessing..., then player has chosen answer...
 - the existing lobby chatbox will persist
 
+![image info](static/images/spill.jpg)
+
 ### guessmade route (dinner:guessmade)
 - a message will be displayed guesser guessed that guessedPlayer answered guessedAnswer and this is...
 - a timer (1 second)
@@ -56,6 +58,8 @@ IF CORRECT:
   - display a message for guesser only: `OK`
   - go to guessing route
 - If there is only guesser remaining: go to "winner" route
+
+![image info](static/images/cafe.jpg)
 
 ### winner route (dinner:winner)
 - display a message
