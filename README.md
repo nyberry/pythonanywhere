@@ -7,8 +7,8 @@
 - Taking it in turns, the players have to guess which player gave each answer.
 - Once a player and their answer have been correctly guessed, that player is "out".
 - When only one player remains, they are the winner.
-- 
-<img src="static/images/invitation.jpg" alt="invitation" style="width: 50vw;">
+  
+<img src="static/images/invitation.jpg" alt="invitation" style="width: 50vw; text-align: center;">
 
 # Development ideas & psuedocode
 
@@ -38,7 +38,7 @@
 - the existing lobby chatbox will persist
 
 
-<img src="static/images/spill.jpg" alt="whoops" style="width: 50vw;">
+<img src="static/images/spill.jpg" alt="whoops" style="width: 50vw; text-align: center;">
 
 ### guessmade route (dinner:guessmade)
 - a message will be displayed guesser guessed that guessedPlayer answered guessedAnswer and this is...
@@ -61,7 +61,7 @@ IF CORRECT:
 - If there is only guesser remaining: go to "winner" route
 
 
-<img src="static/images/cafe.jpg" alt="coffee" style="width: 50vw;">
+<img src="static/images/cafe.jpg" alt="coffee" style="width: 50vw; text-align: center;">
 
 ### winner route (dinner:winner)
 - display a message
