@@ -20,7 +20,7 @@
 
 ### join route (dinner:join)
 - ask the player's name, if we don't already know it
-- say welcome <player>
+- say welcome player
 - register the player as having joined.
 - ask them a question
 - direct them to the lobby
@@ -34,38 +34,38 @@
 - if the player is the guesser, and has not yet guessed an answer, they will see a list of all the answers (including theirs). They can select any answer except their own.
 - if the player is the guesser, and has guessed an answer, they will see the answer they have selected, and a list of all the remaining players (including theirs). They can select any remaining player.
 - when both an answer and a player have been selected, the players are taken to a guessmade route to handle to logic.
-- if the player is not the guesser, they will see a message <player> is guessing..., then <player> has chosen <answer>...
+- if the player is not the guesser, they will see a message player is guessing..., then player has chosen answer...
 - the existing lobby chatbox will persist
 
 ### guessmade route (dinner:guessmade)
-- a message will be displayed <guesser> guessed that <guessedPlayer> answered <guessedAnswer> and this is...
+- a message will be displayed guesser guessed that guessedPlayer answered guessedAnswer and this is...
 - a timer (1 second)
 - display "CORRECT"! or "WRONG!"
 - a timer (1 second)
 If WRONG:
-- display "it is now <guessedPlayer>'s turn"
-- display a message for <guessedPlayer> only `OK`
+- display "it is now guessedPlayer's turn"
+- display a message for guessedPlayer only `OK`
 - when guessedPlayer clicks `OK`, go to the guessing route.
 IF CORRECT:
-- display a message <guessedPlayer> is out" and handle the logic for removing them from the player list
+- display a message guessedPlayer is out" and handle the logic for removing them from the player list
 - a timer (1 second)
 - If there are 2 or more players remaining:
   - display a message "The remaining players are..." list players
   - a timer (1 second)
-  - display "<guesser> plays again"
+  - display "guesser plays again"
   - display a message for guesser only: `OK`
   - go to guessing route
-- If there is only <guesser> remaining: go to "winner" route
+- If there is only guesser remaining: go to "winner" route
 
 ### winner route (dinner:winner)
 - display a message
-- <guesser wins!>
+- guesser wins!
 - timer 1 second
-- ask <guesser> to choose a question for the next game (give a choice of 3 questions or to ask their own question.
+- ask guesser to choose a question for the next game (give a choice of 3 questions or to ask their own question.
 - button `play again` will take the player to the "next question" route
 
 ### next question route (dinner:nextquestion)
-- if the question has not yet been defined, display "<guesser> is choosing the next question..."
+- if the question has not yet been defined, display "guesser is choosing the next question..."
 - as soon as the question is defined, ask the user the question. Store the answer and head to the lobby route.
 
 
