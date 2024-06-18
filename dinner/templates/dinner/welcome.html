@@ -1,12 +1,23 @@
 {% extends "dinner/layout.html" %}
 {% load static %}
-
 {% block title %}
     Invitation
 {% endblock %}
-
 {% block main %}
-<a href="/">
-    <img src="{% static 'images/dinnertable.jpg' %}" width="640" class="img-fluid" alt="Invitation Image">
-</a>
+<div class="text-center">
+    <a href="/">
+        <img src="{% static 'images/dinnertable.jpg' %}" class="img-fluid" alt="Invitation Image">
+    </a>
+    <br>
+    <br>
+    <div class="d-flex flex-column align-items-center mt-3">
+        <a href="#" class="btn mb-2 w-50" style="background-color: pink; color: black;">About</a>
+        <a href="#" class="btn mb-2 w-50" style="background-color: pink; color: black;">Development</a>
+        {% if not game_started %}
+        <a href="/?action=start" class="btn mb-2 w-50" style="background-color: darkgreen; color: white;">Start a New Game</a>
+        {% else %}
+        <a href="/?action=join" class="btn mb-2 w-50" style="background-color: darkgreen; color: white;">Join the Game</a>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}
