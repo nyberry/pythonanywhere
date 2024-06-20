@@ -3,7 +3,54 @@ from django.urls import reverse
 from django.http import HttpResponse
 import markdown2
 import os
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Game, Question, Answer, Guess
+from .forms import QuestionForm, AnswerForm, GuessForm
 
+def game_list(request):
+    games = Game.objects.all()
+    return render(request, 'dinner/game_list.html', {'games': games})
+
+def game_detail(request, pk):
+    game = get_object_or_404(Game, pk=pk)
+    question = game.question_set.first()
+    if request.method == "POST":
+        form = AnswerForm(request.POST)
+        if form.is_valid():
+            answer = form.save(commit=False)
+            answer.question = question
+            answer.user = request.user
+            answer.save()
+            return redirect('game_detail', pk=game.pk)
+    else:
+        form = AnswerForm()
+    answers = question.answer_set.all()
+    return render(request, 'dinner/game_detail.html', {'game': game, 'question': question, 'answers': answers, 'form': form})
+
+def guess(request, pk):
+    game = get_object_or_404(Game, pk=pk)
+    if request.method == "POST":
+        form = GuessForm(request.POST)
+        if form.is_valid():
+            guess = form.save(commit=False)
+            guess.guesser = request.user
+            guess.game = game
+            guess.correct = guess.guessed_user == guess.answer.user
+            guess.save()
+            return redirect('game_detail', pk=game.pk)
+    else:
+        form = GuessForm()
+    return render(request, 'dinner/guess.html', {'form': form, 'game': game})
+
+def add_question(request):
+    if request.method == "POST":
+        form = QuestionForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('game_list')  # Redirect to a list of games or another appropriate page
+    else:
+        form = QuestionForm()
+    return render(request, 'dinner/add_question.html', {'form': form})
 class Player:
     def __init__(self, id, name, ip, host=False, guessed=False):
         self.id = id

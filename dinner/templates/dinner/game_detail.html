@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ game.name }}</title>
+</head>
+<body>
+    <h1>{{ game.name }}</h1>
+    <h2>{{ question.text }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit Answer</button>
+    </form>
+    <h2>Answers</h2>
+    <ul>
+        {% for answer in answers %}
+            <li>{{ answer.text }}</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'guess' game.pk %}">Make a Guess</a>
+</body>
+</html>
