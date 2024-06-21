@@ -1,19 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Make a Guess</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congratulations! You Won!</title>
 </head>
 <body>
-    <h1>Make a Guess for Game {{ game.pk }}</h1>
-    
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Submit Guess</button>
-    </form>
-    
-    <hr>
-    
+    <h1>Bad luck, your answer was guessed.</h1>
+    <a href="{% url 'game_list' %}">Join Another Game</a>
+
+
     <h2>Answers</h2>
     <ul>
         {% for answer in answers %}
@@ -35,7 +31,5 @@
             {% endif %}
         {% endfor %}
     </ul>
-
-
 </body>
 </html>

@@ -18,13 +18,17 @@ class AnswerForm(forms.ModelForm):
         fields = ['answer_text']
 
 class GuessForm(forms.ModelForm):
+
+    guessed_player = forms.ModelChoiceField(queryset=None, label='Select player')
+    answer_text = forms.ModelChoiceField(queryset=None, label='Select answer')
+
     class Meta:
         model = Guess
-        fields = ['answer_text', 'guessed_player']
+        fields = ['guessed_player', 'answer_text']
 
     def __init__(self, *args, **kwargs):
-        answers = kwargs.pop('answers', None)
-        players = kwargs.pop('players', None)
+        answers = kwargs.pop('remaining_answers', None)
+        players = kwargs.pop('remaining_players', None)
         
         super(GuessForm, self).__init__(*args, **kwargs)
         

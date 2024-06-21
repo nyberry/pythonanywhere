@@ -28,9 +28,11 @@ def game_list(request):
 def game_detail(request, pk):
     game = get_object_or_404(Game, pk=pk)
 
-    # Fetch the current player object from session
+    # Fetch the current player object from sessionlayer
+    players = Player.objects.all()
     current_player = Player.objects.get(name=request.session['player_name'])
     current_player.game = game
+    current_player.guessed_out= False
     current_player.save()
     
     # Fetch the current game question and the answers given so far
@@ -50,7 +52,7 @@ def game_detail(request, pk):
             return redirect('game_detail', pk=game.pk)
     else:
         form = AnswerForm()
-    return render(request, 'dinner/game_detail.html', {'game': game, 'question': question, 'answers': answers, 'form': form})
+    return render(request, 'dinner/game_detail.html', {'game': game, 'question': question, 'answers': answers, 'form': form, 'players':players})
 
 
 @registration_required
@@ -58,10 +60,14 @@ def guess(request, pk):
     game = get_object_or_404(Game, pk=pk)
     answers = Answer.objects.filter(question__game=game)
     players = Player.objects.filter(game=game)
+    remaining_players = Player.objects.filter(game=game, guessed_out=False)
+    remaining_answers = Answer.objects.filter(question__game=game, player__guessed_out=False) 
     current_player = Player.objects.get(name=request.session['player_name'])
+    if current_player.guessed_out==True:
+         return redirect('loser_page',pk=pk)
        
     if request.method == "POST":
-        form = GuessForm(request.POST,answers=answers, players=players)
+        form = GuessForm(request.POST,remaining_answers=remaining_answers, remaining_players=remaining_players)
         if form.is_valid():
             guess = form.save(commit=False)
             guess.guesser = current_player
@@ -71,18 +77,24 @@ def guess(request, pk):
             guessed_player = form.cleaned_data['guessed_player']
             guess.correct = (guessed_answer.player == guessed_player)
             guess.game = game
+            guess.save()
 
             if guess.correct:
-                print ("CORRECT")
-            else:
-                print ("INCORRECT")
+                guessed_player.guessed_out = True
+                guessed_player.save()
 
-            guess.save()
-            return redirect('game_detail', pk=game.pk)
+                # Check if only one player remains in the game
+                remaining_players_count = Player.objects.filter(game=game, guessed_out=False).count()
+                if remaining_players_count == 1:
+                    # Redirect to the winner page if only one player remains
+                    return redirect('winner_page',pk=pk)
+
+            return render(request, 'dinner/result.html', {'correct': guess.correct, 'game': game, 'guessed_player': guessed_player, 'guessed_answer': guessed_answer})
+           
     else:
-        form = GuessForm(answers=answers, players=players)
+        form = GuessForm(remaining_answers=remaining_answers, remaining_players=remaining_players)
     
-    return render(request, 'dinner/guess.html', {'form': form, 'game': game, 'answers': answers})
+    return render(request, 'dinner/guess.html', {'form': form, 'game': game, 'answers': answers, 'players':players, 'remaining_answers': remaining_answers, 'remaining_players':remaining_players})
 
 
 @registration_required
@@ -107,6 +119,8 @@ def start_new_game(request):
             question = question_form.save(commit=False)
             question.game = game
             question.save()
+            current_player.guessed_out = False
+            current_player.save()
             return redirect('game_detail', pk=game.pk)
     else:
         question_form = QuestionForm()
@@ -115,3 +129,37 @@ def start_new_game(request):
         'question_form': question_form,
     }
     return render(request, 'dinner/start_new_game.html', context)
+
+@registration_required
+def winner_page(request, pk):
+    game = get_object_or_404(Game, pk=pk)  # Retrieve the game object
+    players = Player.objects.filter(game=game)  # Fetch all players
+    remaining_players = Player.objects.filter(game=game, guessed_out=False)  # Fetch remaining players
+    answers = Answer.objects.filter(question__game=game)  # Fetch all answers
+    remaining_answers = Answer.objects.filter(question__game=game, player__guessed_out=False)  # Fetch remaining answers
+    
+    context = {
+        'players': players,
+        'remaining_players': remaining_players,
+        'answers': answers,
+        'remaining_answers': remaining_answers,
+    }
+    
+    return render(request, 'dinner/winner_page.html', context)
+
+@registration_required
+def loser_page(request, pk):
+    game = get_object_or_404(Game, pk=pk)  # Retrieve the game object
+    players = Player.objects.filter(game=game)  # Fetch all players
+    remaining_players = Player.objects.filter(game=game, guessed_out=False)  # Fetch remaining players
+    answers = Answer.objects.filter(question__game=game)  # Fetch all answers
+    remaining_answers = Answer.objects.filter(question__game=game, player__guessed_out=False)  # Fetch remaining answers
+    
+    context = {
+        'players': players,
+        'remaining_players': remaining_players,
+        'answers': answers,
+        'remaining_answers': remaining_answers,
+    }
+    
+    return render(request, 'dinner/loser_page.html', context)
