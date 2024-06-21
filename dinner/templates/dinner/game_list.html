@@ -1,15 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Games</title>
+    <title>Game List</title>
 </head>
 <body>
-    <h1>Games</h1>
+    <h1>Game List</h1>
     <ul>
         {% for game in games %}
-            <li><a href="{% url 'game_detail' game.pk %}">{{ game.name }}</a></li>
+            <li>
+                <a href="{% url 'game_detail' game.pk %}">Join game {{ game.pk }}</a>
+            </li>
+        {% empty %}
+            <li>No games yet</li>
         {% endfor %}
     </ul>
-    <a href="{% url 'add_question' %}">Add a New Question</a>  <!-- New link -->
+    <br>
+    <a href="{% url 'start_new_game' %}">Create a New Game</a>
 </body>
 </html>

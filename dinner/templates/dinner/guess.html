@@ -4,11 +4,21 @@
     <title>Make a Guess</title>
 </head>
 <body>
-    <h1>Make a Guess</h1>
+    <h1>Make a Guess for Game {{ game.pk }}</h1>
+    
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Submit Guess</button>
     </form>
+    
+    <hr>
+    
+    <h2>Answers for Game {{ game.pk }}</h2>
+    <ul>
+        {% for answer in answers %}
+            <li>{{ answer.answer_text }}</li>
+        {% endfor %}
+    </ul>
 </body>
 </html>

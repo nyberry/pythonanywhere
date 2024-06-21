@@ -1,5 +1,8 @@
 # The Dinner Party Game
 ### A guessing game for 4-10 players
+
+<img src="static/images/invitation.jpg" alt="invitation" style="width: 50vw; display: block; margin: 0 auto;">
+
 ## How it works
 - Once you join the game, you are asked a question.
 - When all players have given an answer, the game begins.
@@ -8,9 +11,30 @@
 - Once a player and their answer have been correctly guessed, that player is "out".
 - When only one player remains, they are the winner.
   
-<img src="static/images/invitation.jpg" alt="invitation" style="width: 50vw; display: block; margin: 0 auto;">
+## Models
 
-# Development ideas & psuedocode
+### Game
+
+The game model holds information about the state of the game: 'lobby', 'live', or 'finished'. It also holds information about which player created it, and when. 
+
+### Player
+
+The player model contains the player's name, and their status guessed_out which is initaly set to False, then becomes True once their answer has been guessed, meaning they are 'out'. Each player should be associated with one game.
+
+### Question
+
+Each game has exactly one question associated with it, created at the same time as the game.
+
+### Answer
+
+Each player can give one answer to each question. Each answer object is linked (foreign key) to a player object and a question object.
+
+### Guess
+
+A guess is linked to one game. One guesser can select one other player and one answer. There is a boolean flag which is set to True if the guess is correct.
+
+## Routes
+
 
 ### welcome route (dinner:welcome)
 - If game_started = False, then give each player landing on welcome.html the option to start a new game.

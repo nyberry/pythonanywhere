@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Start New Game</title>
+</head>
+<body>
+    <h1>Start New Game</h1>
+    <form method="post">
+        {% csrf_token %}
+        
+        <h2>Question Details</h2>
+        {{ question_form.as_p }}
+        
+        <button type="submit">Start Game</button>
+    </form>
+</body>
+</html>
