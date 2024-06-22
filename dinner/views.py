@@ -35,14 +35,16 @@ def join_game(request):
     # if the last game has lobby status, direct the player to the question page of that game
 
     most_recent_game_id = games.aggregate(Max('id'))['id__max']
+    print(most_recent_game_id)
     game = get_object_or_404(Game, pk=most_recent_game_id)
+    print(game.status)
 
-    if game.status == "LOBBY":
+    if game.status == "lobby":
         return redirect(reverse('ask_question', kwargs={'pk': most_recent_game_id}))
 
     # Else if the last game has active status, direct the player to the spectator page for that game
 
-    elif game.status == "ACTIVE":
+    elif game.status == "active":
         return HttpResponse("The game has already started")
 
     # Else if the last game has status finished, create a new game
@@ -94,17 +96,30 @@ def ask_question(request, pk):
 
 @registration_required
 def guess(request, pk):
+   
+    # fetch the game and player objects
     game = get_object_or_404(Game, pk=pk)
-    answers = Answer.objects.filter(question__game=game)
     players = Player.objects.filter(game=game)
-    remaining_players = Player.objects.filter(game=game, guessed_out=False)
-    remaining_answers = Answer.objects.filter(question__game=game, player__guessed_out=False) 
-    current_player = Player.objects.get(name=request.session['player_name'])
+    current_player = players.get(name=request.session['player_name'])
+
+    # redirect to loser page if current player is guessed out
     if current_player.guessed_out==True:
          return redirect('loser_page',pk=pk)
-       
+    
+    # Fetch players who are not guessed out
+    remaining_players = players.filter(guessed_out=False)
+    
+    # Fetch answers for the current game where the player is not guessed out
+    answers = Answer.objects.filter(question__game=game)
+    remaining_answers = answers.filter(player__guessed_out=False)
+    
+    # Exclude the current player and their answer from the list of chooseable players and answers
+    chooseable_players = remaining_players.exclude(id=current_player.id)
+    chooseable_answers = remaining_answers.exclude(player__id=current_player.id)
+
+    # handle the guess
     if request.method == "POST":
-        form = GuessForm(request.POST,remaining_answers=remaining_answers, remaining_players=remaining_players)
+        form = GuessForm(request.POST,chooseable_answers=chooseable_answers, chooseable_players=chooseable_players)
         if form.is_valid():
             guess = form.save(commit=False)
             guess.guesser = current_player
@@ -124,14 +139,16 @@ def guess(request, pk):
                 remaining_players_count = Player.objects.filter(game=game, guessed_out=False).count()
                 if remaining_players_count == 1:
                     # Redirect to the winner page if only one player remains
+                    game.status='FINISHED'
+                    game.save()
                     return redirect('winner_page',pk=pk)
 
             return render(request, 'dinner/result.html', {'correct': guess.correct, 'game': game, 'guessed_player': guessed_player, 'guessed_answer': guessed_answer})
            
     else:
-        form = GuessForm(remaining_answers=remaining_answers, remaining_players=remaining_players)
+        form = GuessForm(chooseable_answers=chooseable_answers, chooseable_players=chooseable_players)
     
-    return render(request, 'dinner/guess.html', {'form': form, 'game': game, 'answers': answers, 'players':players, 'remaining_answers': remaining_answers, 'remaining_players':remaining_players})
+    return render(request, 'dinner/guess.html', {'form': form, 'game': game, 'answers': answers, 'players':players, 'current_player':current_player, 'remaining_answers': remaining_answers, 'remaining_players':remaining_players})
 
 
 @registration_required

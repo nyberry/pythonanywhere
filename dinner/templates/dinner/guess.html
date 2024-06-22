@@ -4,7 +4,7 @@
     <title>Make a Guess</title>
 </head>
 <body>
-    <h1>Make a Guess for Game {{ game.pk }}</h1>
+    <h1>Make a Guess</h1>
     
     <form method="post">
         {% csrf_token %}
@@ -15,26 +15,36 @@
     <hr>
     
     <h2>Answers</h2>
-    <ul>
-        {% for answer in answers %}
-            {% if answer.player.guessed_out %}
-            <li style="text-decoration: line-through;">{{ answer.answer_text }}</li>
-            {% else %}
-            <li>{{ answer.answer_text }}</li>
-            {% endif %}
-        {% endfor %}
-    </ul>
+<ul>
+    {% for answer in answers %}
+        {% if answer.player.guessed_out %}
+            <li style="text-decoration: line-through;">
+        {% else %}
+            <li>
+        {% endif %}
+                {{ answer.answer_text }}
+                {% if answer.player == current_player %}
+                    (you)
+                {% endif %}
+            </li>
+    {% endfor %}
+</ul>
 
-    <h2>Players</h2>
-    <ul>
-        {% for player in players %}
-            {% if player.guessed_out %}
-            <li style="text-decoration: line-through;">{{ player.name }}</li>
-            {% else %}
-            <li>{{ player.name }}</li>
-            {% endif %}
-        {% endfor %}
-    </ul>
+<h2>Players</h2>
+<ul>
+    {% for player in players %}
+        {% if player.guessed_out %}
+            <li style="text-decoration: line-through;">
+        {% else %}
+            <li>
+        {% endif %}
+                {{ player.name }}
+                {% if player == current_player %}
+                    (you)
+                {% endif %}
+            </li>
+    {% endfor %}
+</ul>
 
 
 </body>

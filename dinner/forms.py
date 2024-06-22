@@ -11,11 +11,17 @@ class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question
         fields = ['question_text']
+        labels = {
+            'question_text':'Your question'
+        }
 
 class AnswerForm(forms.ModelForm):
     class Meta:
         model = Answer
         fields = ['answer_text']
+        labels = {
+            'answer_text': 'Your answer',
+        }
 
 class GuessForm(forms.ModelForm):
 
@@ -27,13 +33,17 @@ class GuessForm(forms.ModelForm):
         fields = ['guessed_player', 'answer_text']
 
     def __init__(self, *args, **kwargs):
-        answers = kwargs.pop('remaining_answers', None)
-        players = kwargs.pop('remaining_players', None)
+        answers = kwargs.pop('chooseable_answers', None)
+        players = kwargs.pop('chooseable_players', None)
         
         super(GuessForm, self).__init__(*args, **kwargs)
         
-        if answers:
+        if answers is not None:
             self.fields['answer_text'].queryset = answers
+        else:
+            self.fields['answer_text'].queryset = Answer.objects.none()
         
-        if players:
+        if players is not None:
             self.fields['guessed_player'].queryset = players
+        else:
+            self.fields['guessed_player'].queryset = Player.objects.none()
