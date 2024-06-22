@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>{{ game.name }}</title>
+    <title>Question</title>
 </head>
 <body>
-    <h1>{{ game.name }}</h1>
-    <h2>{{ question.question_text }}</h2>
+    <h1>{{ question.question_text }}</h1>
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}

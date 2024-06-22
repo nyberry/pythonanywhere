@@ -45,7 +45,7 @@ def join_game(request):
     # Else if the last game has active status, direct the player to the spectator page for that game
 
     elif game.status == "active":
-        return HttpResponse("The game has already started")
+        return HttpResponse("Wait for the next game to be started...")
 
     # Else if the last game has status finished, create a new game
 
@@ -97,8 +97,8 @@ def ask_question(request, pk):
 @registration_required
 def guess(request, pk):
    
-    # fetch the game and player objects
-    game = get_object_or_404(Game, pk=pk)
+    # fetch the game, question and player objects
+    game = get_object_or_404(Game, pk=pk) 
     players = Player.objects.filter(game=game)
     current_player = players.get(name=request.session['player_name'])
 
@@ -148,7 +148,7 @@ def guess(request, pk):
     else:
         form = GuessForm(chooseable_answers=chooseable_answers, chooseable_players=chooseable_players)
     
-    return render(request, 'dinner/guess.html', {'form': form, 'game': game, 'answers': answers, 'players':players, 'current_player':current_player, 'remaining_answers': remaining_answers, 'remaining_players':remaining_players})
+    return render(request, 'dinner/guess.html', {'form': form, 'game': game, 'question':game.question, 'answers': answers, 'players':players, 'current_player':current_player, 'remaining_answers': remaining_answers, 'remaining_players':remaining_players})
 
 
 @registration_required
