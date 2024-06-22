@@ -1,10 +1,22 @@
 from django.db import models
 
 class Game(models.Model):
+    LOBBY = 'lobby'
+    ACTIVE = 'active'
+    FINISHED = 'finished'
+    
+    STATUS_CHOICES = [
+        (LOBBY, 'Lobby'),
+        (ACTIVE, 'Active'),
+        (FINISHED, 'Finished'),
+    ]
+    
     creator = models.ForeignKey('Player', on_delete=models.CASCADE, related_name='created_games', null=True, blank=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=LOBBY)
 
     def __str__(self):
         return f"Game {self.id} created by {self.creator}"
+
 
 class Player(models.Model):
     name = models.CharField(max_length=30, unique=True)
