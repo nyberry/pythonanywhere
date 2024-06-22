@@ -32,12 +32,12 @@ def join_game(request):
     if not games:
         return redirect('start_new_game')
 
-    # if the last game has lobby status, direct the player to the question page of that game
+    # Load the most recently created game
 
     most_recent_game_id = games.aggregate(Max('id'))['id__max']
-    print(most_recent_game_id)
     game = get_object_or_404(Game, pk=most_recent_game_id)
-    print(game.status)
+
+    # if the last game has lobby status, direct the player to the question page of that game
 
     if game.status == "lobby":
         return redirect(reverse('ask_question', kwargs={'pk': most_recent_game_id}))
@@ -158,7 +158,9 @@ def start_new_game(request):
     if request.method == 'POST':
         question_form = QuestionForm(request.POST)
         if question_form.is_valid():        
-            game = Game.objects.create(creator=current_player)   
+            game = Game.objects.create(creator=current_player)
+            game.status = 'lobby'
+            game.save()   
             question = question_form.save(commit=False)
             question.game = game
             question.save()
