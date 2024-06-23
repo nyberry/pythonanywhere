@@ -1,14 +1,16 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Player Registration</title>
-</head>
-<body>
-    <h2>Player Registration</h2>
+{% extends "dinner/layout.html" %}
+{% load static %}
+{% block title %}
+    Welcome, guest!
+{% endblock %}
+
+{% block main %}
     <form method="post">
         {% csrf_token %}
+        <img src="{% static 'images/invitation.jpg' %}" class="img-fluid" alt="Invitation">
+        <br><br>
+        <h1>Please enter your name</h1>
         {{ form.as_p }}
-        <button type="submit">Register</button>
+        <button type="submit">Join</button>
     </form>
-</body>
-</html>
+{% endblock %}

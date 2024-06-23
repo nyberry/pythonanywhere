@@ -6,6 +6,9 @@ class PlayerRegistrationForm(forms.ModelForm):
     class Meta:
         model = Player
         fields = ['name']
+        labels = {
+            'name':''
+        }
 
 class QuestionForm(forms.ModelForm):
     class Meta:
