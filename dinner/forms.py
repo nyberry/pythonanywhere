@@ -12,7 +12,7 @@ class QuestionForm(forms.ModelForm):
         model = Question
         fields = ['question_text']
         labels = {
-            'question_text':'Your question'
+            'question_text':''
         }
 
 class AnswerForm(forms.ModelForm):

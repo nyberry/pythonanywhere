@@ -1,17 +1,17 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Start a new game</title>
-</head>
-<body>
-    <h1>Start New Game</h1>
+{% extends "dinner/layout.html" %}
+{% load static %}
+{% block title %}
+    Start a new game
+{% endblock %}
+
+{% block main %}
     <form method="post">
         {% csrf_token %}
-        
-        <h2>Think of a question</h2>
+        <img src="{% static 'images/dinnertable.jpg' %}" class="img-fluid" alt="The Dinner Party Game">
+        <br><br>
+        <h1>Think of a question</h1>
         {{ question_form.as_p }}
         
-        <button type="submit">Start Game</button>
+        <button type="submit">Submit</button>
     </form>
-</body>
-</html>
+{% endblock %}

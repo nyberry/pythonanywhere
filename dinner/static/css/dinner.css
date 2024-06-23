@@ -76,3 +76,13 @@ img {
 .strikethrough {
     text-decoration: line-through;
 }
+
+form {
+    font-size: 30px;
+}
+form h1 {
+    font-size: 30px;
+}
+form button {
+    font-size: 30px;
+}
