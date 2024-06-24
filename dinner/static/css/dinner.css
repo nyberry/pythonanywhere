@@ -1,5 +1,4 @@
 .container {
-    display: flex;
     justify-content: center;
   }
 
@@ -57,7 +56,20 @@ img {
     height: auto; /* Maintain aspect ratio */
 }
 
+.header-button {
+    background-color: #ffb6c1; /* Pastel pink background color */
+    border: 1px solid #ffb6c1; /* Pastel pink border color */
+    padding: 1px 8px; /* Padding inside the button */
+    font-size: 16px; /* Font size */
+    cursor: pointer; /* Cursor style */
+    box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.5); /* Box shadow for a slight lift effect */
+    transition: background-color 0.3s, border-color 0.3s; /* Smooth transition for background and border */
+}
 
+.header-button:hover {
+    background-color: #ff91a4; /* Slightly darker pink on hover */
+    border-color: #ff91a4; /* Match border color on hover */
+}
 .paper-button {
     background-color: #f5f5f5; /* Light gray background color */
     border: 1px solid #ccc; /* Border color */

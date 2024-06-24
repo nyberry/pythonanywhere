@@ -170,6 +170,7 @@ def start_new_game(request):
     
     context = {
         'question_form': question_form,
+        'current_player': current_player
     }
     return render(request, 'dinner/start_new_game.html', context)
 
