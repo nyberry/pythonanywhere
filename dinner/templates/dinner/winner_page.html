@@ -1,39 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Congratulations! You Won!</title>
-</head>
-<body>
-    <h1>Congratulations! You Won!</h1>
-    <p>Well done on your victory!</p>
-    <a href="{% url 'start_new_game' %}">Start Another Game</a>
-
-
-    <h2>Answers</h2>
-    <ul>
-        {% for answer in answers %}
-            {% if answer.player.guessed_out %}
-            <li style="text-decoration: line-through;">{{ answer.answer_text }}</li>
-            {% else %}
-            <li>{{ answer.answer_text }}</li>
-            {% endif %}
-        {% endfor %}
-    </ul>
-
-    <h2>Players</h2>
-    <ul>
-        {% for player in players %}
-            {% if player.guessed_out %}
-            <li style="text-decoration: line-through;">{{ player.name }}</li>
-            {% else %}
-            <li>{{ player.name }}</li>
-            {% endif %}
-        {% endfor %}
-    </ul>
-
-
-
-</body>
-</html>
+{% extends "dinner/layout.html" %}
+{% load static %}
+{% block title %}
+    Winner
+{% endblock %}
+{% block main %}
+    <div class="text-center">
+        <br><br>
+        <h1>Congratulations... you won!</h1>
+        <a href="/">
+            <img src="{% static 'images/cafe.jpg' %}" class="img-fluid" alt="Winner">
+        </a>
+        <form method="post" action="{% url 'winner_page' game_id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary mt-3">OK</button>
+        </form>
+    </div>
+{% endblock %}

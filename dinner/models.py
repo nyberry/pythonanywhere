@@ -1,20 +1,22 @@
 from django.db import models
 
 class Game(models.Model):
+    GETQUESTION = 'get_question'
     LOBBY = 'lobby'
     ACTIVE = 'active'
     FINISHED = 'finished'
     ABANDONED = 'abandoned'
     
     STATUS_CHOICES = [
+        (GETQUESTION, 'Get_question'),
         (LOBBY, 'Lobby'),
         (ACTIVE, 'Active'),
         (FINISHED, 'Finished'),
-        (ABANDONED, 'Abandoned')
+        (ABANDONED, 'Abandoned'),
     ]
     
     creator = models.ForeignKey('Player', on_delete=models.CASCADE, related_name='created_games', null=True, blank=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=LOBBY)
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default=LOBBY)
 
     def __str__(self):
         return f"Game {self.id} created by {self.creator}"

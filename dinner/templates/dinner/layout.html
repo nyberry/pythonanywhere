@@ -19,16 +19,16 @@
                 }
             });
 
-            function showResetConfirmation(pk) {
+            function showResetConfirmation() {
                 var resetModal = new bootstrap.Modal(document.getElementById('resetModal'));
                 resetModal.show();
                 document.getElementById('resetGameButton').onclick = function() {
-                    resetGame(pk);
+                    resetGame();
                 };
             }
 
-            function resetGame(pk) {
-                window.location.href = "/reset_game/" + pk + "/";
+            function resetGame() {
+                window.location.href = "/reset_game/";
             }
         </script>
 
@@ -45,7 +45,7 @@
                     {% else %}
                         <button class="btn header-button">Hello guest</button>
                     {% endif %}
-                    <button class="btn header-button" onclick="showResetConfirmation({{ game.pk }})">Reset</button>
+                    <button class="btn header-button" onclick="showResetConfirmation()">Reset</button>
                 </div>
             </div>
 
