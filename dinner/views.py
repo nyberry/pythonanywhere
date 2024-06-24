@@ -27,28 +27,23 @@ def register_player(request):
 def join_game(request):
 
     # This is the landing page. If there are no games, create a game now.
-
     games = Game.objects.all()
     if not games:
         return redirect('start_new_game')
 
     # Load the most recently created game
-
     most_recent_game_id = games.aggregate(Max('id'))['id__max']
     game = get_object_or_404(Game, pk=most_recent_game_id)
 
     # if the last game has lobby status, direct the player to the question page of that game
-
     if game.status == "lobby":
         return redirect(reverse('ask_question', kwargs={'pk': most_recent_game_id}))
 
     # Else if the last game has active status, direct the player to the spectator page for that game
-
     elif game.status == "active":
         return HttpResponse("Wait for the next game to be started...")
 
     # Else if the last game has status finished, create a new game
-
     else:
         return redirect('start_new_game')
 
@@ -57,8 +52,11 @@ def join_game(request):
 def ask_question(request, pk):
 
     # This is the lobby page where players are asked a question, and then wait until the game starts.
-
     game = get_object_or_404(Game, pk=pk)
+
+    # If there is no question yet, go to a holding page
+    if not game.question:
+        return render(request,'dinner/wait_for_question.html',{'host':game.creator})
 
     # Fetch the current player object from session data, and update their game and guessed status fields
     players = Player.objects.all()
@@ -154,13 +152,13 @@ def guess(request, pk):
 @registration_required
 def start_new_game(request):
     current_player = Player.objects.get(name=request.session['player_name'])
+    game = Game.objects.create(creator=current_player)
+    game.status = 'lobby'
+    game.save()
 
     if request.method == 'POST':
         question_form = QuestionForm(request.POST)
-        if question_form.is_valid():        
-            game = Game.objects.create(creator=current_player)
-            game.status = 'lobby'
-            game.save()   
+        if question_form.is_valid():          
             question = question_form.save(commit=False)
             question.game = game
             question.save()
@@ -173,6 +171,13 @@ def start_new_game(request):
         'current_player': current_player
     }
     return render(request, 'dinner/start_new_game.html', context)
+
+@registration_required
+def reset_game(request, pk):
+    game = get_object_or_404(Game, pk=pk)  # Retrieve the game object
+    game.status = 'abandoned'
+    game.save()
+    return redirect('join_game', pk=game.pk)
 
 @registration_required
 def winner_page(request, pk):

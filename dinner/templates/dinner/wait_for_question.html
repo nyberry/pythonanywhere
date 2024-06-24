@@ -1,0 +1,15 @@
+{% extends "dinner/layout.html" %}
+{% load static %}
+{% block title %}
+    Wait for question
+{% endblock %}
+
+{% block main %}
+    <form method="get" action="{% url 'join_game' %}">
+        {% csrf_token %}
+        <img src="{% static 'images/dinnertable.jpg' %}" class="img-fluid" alt="The Dinner Party Game">
+        <br><br>
+        <h1>{{ host }} is thinking of a question</h1>
+        <button type="submit">Check</button>
+    </form>
+{% endblock %}

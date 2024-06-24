@@ -10,6 +10,28 @@
         <link href="{% static 'css/dinner.css' %}" rel="stylesheet">
 
         <title>Dinner: {% block title %}{% endblock %}</title>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var textField = document.getElementById('focus-text-field');
+                if (textField) {
+                    textField.focus();
+                }
+            });
+
+            function showResetConfirmation(pk) {
+                var resetModal = new bootstrap.Modal(document.getElementById('resetModal'));
+                resetModal.show();
+                document.getElementById('resetGameButton').onclick = function() {
+                    resetGame(pk);
+                };
+            }
+
+            function resetGame(pk) {
+                window.location.href = "/reset_game/" + pk + "/";
+            }
+        </script>
+
     </head>
     <body>
         <div class="container py-1 text-center">
@@ -21,13 +43,13 @@
                     {% if current_player %}
                         <button class="btn header-button">{{ current_player.name }}</button>
                     {% else %}
-                        <button class="btn header-button">Please Join Us</button>
+                        <button class="btn header-button">Hello guest</button>
                     {% endif %}
-                    <button class="btn header-button">Reset</button>
+                    <button class="btn header-button" onclick="showResetConfirmation({{ game.pk }})">Reset</button>
                 </div>
             </div>
 
-            <!-- banner image -->
+            <!-- Banner Image -->
             <div>
                 <img src="{% static 'images/banner640.jpg' %}" class="img-fluid" alt="The Dinner Party Game">
             </div>
@@ -36,6 +58,25 @@
             <main>
                 {% block main %}{% endblock %}
             </main>
+
+            <!-- Reset Confirmation Modal -->
+            <div class="modal fade" id="resetModal" tabindex="-1" aria-labelledby="resetModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="resetModalLabel">Confirm Reset</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            End the current game for all players?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                            <button type="button" class="btn btn-primary" id="resetGameButton">Yes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>

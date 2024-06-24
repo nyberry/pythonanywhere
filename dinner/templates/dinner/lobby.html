@@ -1,0 +1,25 @@
+{% extends "dinner/layout.html" %}
+{% load static %}
+{% block title %}
+    Question
+{% endblock %}
+
+{% block main %}
+    <h1>{{ question.question_text }}</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Answer</button>
+    </form>
+
+    <h2>Answers so far:</h2>
+    <ul>
+        {% for answer in answers %}
+            {% if answer.player.guessed_out %}
+            <li style="text-decoration: line-through;">{{ answer.answer_text }}</li>
+            {% else %}
+            <li>{{ answer.answer_text }}</li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+{% endblock %}

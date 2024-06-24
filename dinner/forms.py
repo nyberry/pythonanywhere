@@ -9,6 +9,9 @@ class PlayerRegistrationForm(forms.ModelForm):
         labels = {
             'name':''
         }
+        widgets = {
+            'name': forms.TextInput(attrs={'id': 'focus-text-field', 'class': 'form-control'})
+        }
 
 class QuestionForm(forms.ModelForm):
     class Meta:
@@ -17,14 +20,21 @@ class QuestionForm(forms.ModelForm):
         labels = {
             'question_text':''
         }
+        widgets = {
+            'question_text': forms.TextInput(attrs={'id': 'focus-text-field', 'class': 'form-control'})
+        }
 
 class AnswerForm(forms.ModelForm):
     class Meta:
         model = Answer
         fields = ['answer_text']
         labels = {
-            'answer_text': 'Your answer',
+            'answer_text': '',
         }
+        widgets = {
+            'answer_text': forms.TextInput(attrs={'id': 'focus-text-field', 'class': 'form-control'})
+        }
+
 
 class GuessForm(forms.ModelForm):
 

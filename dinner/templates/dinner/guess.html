@@ -1,9 +1,10 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Make a Guess</title>
-</head>
-<body>
+{% extends "dinner/layout.html" %}
+{% load static %}
+{% block title %}
+    Guess
+{% endblock %}
+
+{% block main %}
     <h1>{{ question }}</h1>
     <h2>Guess who said what</h2>
     
@@ -47,6 +48,4 @@
     {% endfor %}
 </ul>
 
-
-</body>
-</html>
+{% endblock%}

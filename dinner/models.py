@@ -4,11 +4,13 @@ class Game(models.Model):
     LOBBY = 'lobby'
     ACTIVE = 'active'
     FINISHED = 'finished'
+    ABANDONED = 'abandoned'
     
     STATUS_CHOICES = [
         (LOBBY, 'Lobby'),
         (ACTIVE, 'Active'),
         (FINISHED, 'Finished'),
+        (ABANDONED, 'Abandoned')
     ]
     
     creator = models.ForeignKey('Player', on_delete=models.CASCADE, related_name='created_games', null=True, blank=True)

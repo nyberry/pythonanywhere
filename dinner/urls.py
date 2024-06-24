@@ -10,4 +10,5 @@ urlpatterns = [
     path('start_new_game/', views.start_new_game, name='start_new_game'),
     path('winner_page/<int:pk>', views.winner_page, name='winner_page'),
     path('loser/<int:pk>/', views.loser_page, name='loser_page'),
+    path('reset_game/<int:pk>/', views.reset_game, name='reset_game'),
 ]
