@@ -1,52 +1,84 @@
 {% extends "dinner/layout.html" %}
 {% load static %}
+
 {% block title %}
     Guess
 {% endblock %}
 
 {% block main %}
-    <br>
-    <h1>{{ question }}</h1>
-    <br>
-    
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Submit Guess</button>
-    </form>
-    
-    <hr>
-    
-    <h2>Answers</h2>
-<ul>
-    {% for answer in answers %}
-        {% if answer.player.guessed_out %}
-            <li style="text-decoration: line-through;">
-        {% else %}
-            <li>
-        {% endif %}
-                {{ answer.answer_text }}
-                {% if answer.player == current_player %}
-                    (you)
-                {% endif %}
-            </li>
-    {% endfor %}
-</ul>
+    <div style="display: flex; justify-content: space-between; padding-top: 20px;">
+        <form method="post" id="guessForm" style="width: 100%; display: flex; justify-content: space-between;">
+            {% csrf_token %}
+            <div style="width: 45%;">
+                <h2>Players</h2>
+                {% for player in chooseable_players %}
+                    {% if player.guessed_out %}
+                        <label style="text-decoration: line-through;">
+                    {% else %}
+                        <label>
+                    {% endif %}
+                        <input type="radio" name="player" value="{{ player.id }}" onchange="checkSelection()">
+                        {{ player.name }}
+                    </label><br>
+                {% endfor %}
+            </div>
+            
+            <div style="width: 45%;">
+                <h2>Answers</h2>
+                {% for answer in chooseable_answers %}
+                    {% if answer.player.guessed_out %}
+                        <label style="text-decoration: line-through;">
+                    {% else %}
+                        <label>
+                    {% endif %}
+                        <input type="radio" name="answer" value="{{ answer.id }}" onchange="checkSelection()">
+                        {{ answer.answer_text }}
+                    </label><br>
+                {% endfor %}
+            </div>
+        </form>
+    </div>
 
-<h2>Players</h2>
-<ul>
-    {% for player in players %}
-        {% if player.guessed_out %}
-            <li style="text-decoration: line-through;">
-        {% else %}
-            <li>
-        {% endif %}
-                {{ player.name }}
-                {% if player == current_player %}
-                    (you)
-                {% endif %}
-            </li>
-    {% endfor %}
-</ul>
+    <br>
 
-{% endblock%}
+    <div style="display: flex; justify-content: center; margin-top: 20px;">
+        <button id="submitBtn" style="display: none;" onclick="submitForm()">Submit Guess</button>
+    </div>
+
+    <script>
+        function checkSelection() {
+            var playerChecked = false;
+            var answerChecked = false;
+
+            // Check if a player is selected
+            var playerRadios = document.getElementsByName("player");
+            for (var i = 0; i < playerRadios.length; i++) {
+                if (playerRadios[i].checked) {
+                    playerChecked = true;
+                    break;
+                }
+            }
+
+            // Check if an answer is selected
+            var answerRadios = document.getElementsByName("answer");
+            for (var i = 0; i < answerRadios.length; i++) {
+                if (answerRadios[i].checked) {
+                    answerChecked = true;
+                    break;
+                }
+            }
+
+            // Show submit button if both player and answer are selected
+            if (playerChecked && answerChecked) {
+                document.getElementById("submitBtn").style.display = "block";
+            } else {
+                document.getElementById("submitBtn").style.display = "none";
+            }
+        }
+
+        function submitForm() {
+            document.getElementById("guessForm").submit();
+        }
+    </script>
+
+{% endblock %}

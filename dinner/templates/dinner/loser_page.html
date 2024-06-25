@@ -8,7 +8,7 @@
         <br><br>
         <h1>Bad luck, you were guessed.</h1>
         <a href="/">
-            <img src="{% static 'images/spill.jpg' %}" class="img-fluid" alt="Winner">
+            <img src="{% static 'images/spill.jpg' %}" class="img-fluid" alt="guessed out" style="width: 75%;">
         </a>
         <form method="post" action="{% url 'spectate' game_id %}">
             {% csrf_token %}

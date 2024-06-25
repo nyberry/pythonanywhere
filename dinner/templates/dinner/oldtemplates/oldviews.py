@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect, HttpResponse
 from django.urls import reverse
 from django.db.models import Max
 from .models import Player, Game, Question, Answer, Guess
-from .forms import QuestionForm, AnswerForm, PlayerRegistrationForm
+from .forms import QuestionForm, AnswerForm, GuessForm, PlayerRegistrationForm
 from .helpers import registration_required
 from django.db import IntegrityError
 
@@ -123,7 +123,7 @@ def guess(request, pk):
     players = Player.objects.filter(game=game)
     current_player = players.get(name=request.session['player_name'])
 
-    # redirect to join page if the current game session is not active
+    # redirect to join page if the current game session is 'abandoned'
     if game.status == 'abandoned':
         return redirect('join_game')
 
@@ -131,50 +131,46 @@ def guess(request, pk):
     if current_player.guessed_out==True:
          return redirect('loser_page',pk=pk)
     
-    # Fetch players who are not guessed out, and exclude the current player from the list of chooseable players
+    # Fetch players who are not guessed out
     remaining_players = players.filter(guessed_out=False)
-    chooseable_players = remaining_players.exclude(id=current_player.id)
     
     # Fetch answers for the current game where the player is not guessed out
     answers = Answer.objects.filter(question__game=game)
     remaining_answers = answers.filter(player__guessed_out=False)
+    
+    # Exclude the current player and their answer from the list of chooseable players and answers
+    chooseable_players = remaining_players.exclude(id=current_player.id)
     chooseable_answers = remaining_answers.exclude(player__id=current_player.id)
-    print (chooseable_answers, chooseable_players)
 
     # handle the guess
     if request.method == "POST":
-        guessed_player_id = request.POST.get('player')
-        guessed_answer_id = request.POST.get('answer')
-        guessed_player = Player.objects.get(id=guessed_player_id, game=game)
-        guessed_answer = Answer.objects.get(id=guessed_answer_id, question__game=game)
+        form = GuessForm(request.POST,chooseable_answers=chooseable_answers, chooseable_players=chooseable_players)
+        if form.is_valid():
+            guess = form.save(commit=False)
+            guess.guesser = current_player
+          
+            # Check if the guessed answer and guessed player match
+            guessed_answer = form.cleaned_data['answer_text']
+            guessed_player = form.cleaned_data['guessed_player']
+            guess.correct = (guessed_answer.player == guessed_player)
+            guess.game = game
+            guess.save()
 
-        guess = Guess.objects.create(
-            answer=guessed_answer,
-            player=guessed_player,
-            game=game,
-            guesser=current_player,
-            correct=(guessed_player == guessed_answer.player)
-        )
+            if guess.correct:
+                guessed_player.guessed_out = True
+                guessed_player.save()
 
-        if guess.correct:
-            guess.player.guessed_out = True
-            guess.player.save()
+                # Check if only one player remains in the game & redirect to winner page if so.
+                remaining_players_count = Player.objects.filter(game=game, guessed_out=False).count()
+                if remaining_players_count == 1:
+                    return redirect('winner_page',pk=pk)
 
-            # Check if only one player remains in the game & redirect to winner page if so.
-            remaining_players_count = Player.objects.filter(game=game, guessed_out=False).count()
-            if remaining_players_count == 1:
-                return redirect('winner_page',pk=pk)
-
-        return render(request, 'dinner/result.html', {'correct': guess.correct, 'game': game, 'guessed_player': guess.player, 'guessed_answer': guess.answer})
+            return render(request, 'dinner/result.html', {'correct': guess.correct, 'game': game, 'guessed_player': guessed_player, 'guessed_answer': guessed_answer})
            
     else:
-        context = {
-            'current_player': current_player,
-            'question': game.question,
-            'chooseable_players': chooseable_players,
-            'chooseable_answers': chooseable_answers
-            }
-    return render(request, 'dinner/guess.html', context)
+        form = GuessForm(chooseable_answers=chooseable_answers, chooseable_players=chooseable_players)
+    
+    return render(request, 'dinner/guess.html', {'form': form, 'game': game, 'question':game.question, 'answers': answers, 'players':players, 'current_player':current_player, 'remaining_answers': remaining_answers, 'remaining_players':remaining_players})
 
 
 def spectate(request, pk):

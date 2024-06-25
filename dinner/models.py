@@ -55,8 +55,8 @@ class Guess(models.Model):
 
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     guesser = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='guesses')
-    answer_text = models.ForeignKey(Answer, on_delete=models.CASCADE)
-    guessed_player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='guessed')
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
+    player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='guessed')
     correct = models.BooleanField(default=False)
 
     def __str__(self):
