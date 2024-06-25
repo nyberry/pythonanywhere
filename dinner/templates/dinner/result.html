@@ -1,20 +1,54 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Result Page</title>
-</head>
-<body>
-    <h1>{% if correct %}
-        CORRECT
+{% extends "dinner/layout.html" %}
+{% load static %}
+
+{% block title %}
+    Result
+{% endblock %}
+
+{% block main %}
+    <br>
+    <h1>{{ guesser.name }} guessed that {{ guessed_player.name }}'s answer is {{ guessed_answer }}.</h1>
+    <br><br>
+    {% if correct %}
+        <h1>This is CORRECT</h1>
+    {% else %}
+        <h1>But it is NOT</h1>
+    {% endif %}
+    <br>
+
+    <!-- Use a button instead of an anchor -->
+    <button id="viewResultsBtn" class="standard-button">OK</button>
+    
+    {% if  current_player.has_viewed_result %}
+        <h3> Waiting for the other guests </h3>
+
         <br>
-        {{ guessed_player.name }}'s answer was {{ guessed_answer }}
-        {% else %}
-        INCORRECT
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
         <br>
-        {{ guessed_player.name }}'s answer was not {{ guessed_answer }}
-        {% endif %}</h1>
-    <a href="{% url 'guess' game.pk %}" class="btn btn-primary">Guess Again</a>
-</body>
-</html>
+    {% endif %}
+
+    <script>
+        document.getElementById('viewResultsBtn').addEventListener('click', function() {
+            // Create a form element
+            var form = document.createElement('form');
+
+            // Set form attributes (action and method)
+            form.setAttribute('action', "{% url 'view_result' game.pk %}");
+            form.setAttribute('method', 'POST');
+
+            // Create a hidden input field for CSRF token
+            var csrfToken = document.createElement('input');
+            csrfToken.setAttribute('type', 'hidden');
+            csrfToken.setAttribute('name', 'csrfmiddlewaretoken');
+            csrfToken.setAttribute('value', '{{ csrf_token }}');
+            form.appendChild(csrfToken);
+
+            // Submit the form
+            document.body.appendChild(form);
+            form.submit();
+        });
+    </script>
+
+{% endblock %}

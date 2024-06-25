@@ -1,15 +1,20 @@
 # The Dinner Party Game
-### A guessing game for 4-10 players
+### A guessing game for many players
 
 <img src="static/images/invitation.jpg" alt="invitation" style="width: 50vw; display: block; margin: 0 auto;">
 
 ## How it works
-- Once you join the game, you are asked a question.
-- When all players have given an answer, the game begins.
-- All the answers are displayed, anonymously.
-- Taking it in turns, the players have to guess which player gave each answer.
-- Once a player and their answer have been correctly guessed, that player is "out".
-- When only one player remains, they are the winner.
+
+On joining the game, you are asked a question.
+Give your answer, and wait for the other guests to do the same.
+When all guests have given an answer, the host will announce the start of the game.
+Look carefully at the answers that other guests have given.
+Try to decide who might have given each answer.
+When it is your turn, make a guess.
+If you are correct, that guest is OUT and you get to make another guess.
+But if you are wrong, then your turn is over, and the guest you jusk asked gets to make the next guess.
+If another guest correctly guesses your answer, YOU are OUT. So don't make your answers to obvious...
+Finally, when only one player remains, they are the winner.
   
 ## Models
 

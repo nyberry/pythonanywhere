@@ -2,11 +2,10 @@
     justify-content: center;
   }
 
-
 .standard-button {
     background-color: #ffb6c1; /* Pastel pink background color */
     border: 1px solid #ffb6c1; /* Pastel pink border color */
-    padding: 2px 8px; /* Padding inside the button */
+    padding: 0px 10px; /* Padding inside the button */
     font-size: 30px; /* Font size */
     cursor: pointer; /* Cursor style */
     box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.5); /* Box shadow for a slight lift effect */
@@ -26,22 +25,6 @@
     box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.5); /* Box shadow for a slight lift effect */
 }
 
-
-.left-aligned-content {
-    text-align: left; /* Left-align text */
-    padding: 10px; /* Example padding */
-}
-
 .strikethrough {
     text-decoration: line-through;
-}
-
-form {
-    font-size: 30px;
-}
-form h1 {
-    font-size: 30px;
-}
-form button {
-    font-size: 30px;
 }

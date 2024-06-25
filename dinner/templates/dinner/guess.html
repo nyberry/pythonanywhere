@@ -6,79 +6,136 @@
 {% endblock %}
 
 {% block main %}
-    <div style="display: flex; justify-content: space-between; padding-top: 20px;">
-        <form method="post" id="guessForm" style="width: 100%; display: flex; justify-content: space-between;">
+    <br><br>
+    {% if current_player == guessing_player %}
+        <h1>{{ question }}</h1>
+        <br>
+        <h2>{{ current_player }}, make a guess</h2>
+        <div style="display: flex; justify-content: space-between; padding-top: 20px;">
+            <form method="post" id="guessForm" style="width: 100%; display: flex; justify-content: space-between;">
+                {% csrf_token %}
+                <div style="width: 45%;">
+                    <h2>Players</h2>
+                    {% for player in chooseable_players %}
+                        {% if player.guessed_out %}
+                            <label style="text-decoration: line-through;">
+                        {% else %}
+                            <label>
+                        {% endif %}
+                            <input type="radio" name="player" value="{{ player.id }}" onchange="checkSelection()">
+                            {{ player.name }}
+                        </label><br>
+                    {% endfor %}
+                </div>
+                
+                <div style="width: 45%;">
+                    <h2>Answers</h2>
+                    {% for answer in chooseable_answers %}
+                        {% if answer.player.guessed_out %}
+                            <label style="text-decoration: line-through;">
+                        {% else %}
+                            <label>
+                        {% endif %}
+                            <input type="radio" name="answer" value="{{ answer.id }}" onchange="checkSelection()">
+                            {{ answer.answer_text }}
+                        </label><br>
+                    {% endfor %}
+                </div>
+            </form>
+        </div>
+
+        <br>
+
+        <div style="display: flex; justify-content: center; margin-top: 20px;">
+            <button id="submitBtn" style="display: none;" class="standard-button" onclick="submitForm()">Guess</button>
+        </div>
+
+        <script>
+            function checkSelection() {
+                var playerChecked = false;
+                var answerChecked = false;
+
+                // Check if a player is selected
+                var playerRadios = document.getElementsByName("player");
+                for (var i = 0; i < playerRadios.length; i++) {
+                    if (playerRadios[i].checked) {
+                        playerChecked = true;
+                        break;
+                    }
+                }
+
+                // Check if an answer is selected
+                var answerRadios = document.getElementsByName("answer");
+                for (var i = 0; i < answerRadios.length; i++) {
+                    if (answerRadios[i].checked) {
+                        answerChecked = true;
+                        break;
+                    }
+                }
+
+                // Show submit button if both player and answer are selected
+                if (playerChecked && answerChecked) {
+                    document.getElementById("submitBtn").style.display = "block";
+                } else {
+                    document.getElementById("submitBtn").style.display = "none";
+                }
+            }
+
+            function submitForm() {
+                document.getElementById("guessForm").submit();
+            }
+        </script>
+
+    {% else %}
+        <h1>{{ guessing_player }}'s turn.</h1>
+        <br>
+        <h2>{{ question }}</h2>
+        <br>
+        <div style="display: flex; justify-content: space-between; padding-top: 20px;">
+            <form method="post" id="guessForm" style="width: 100%; display: flex; justify-content: space-between;">
+                {% csrf_token %}
+                <div style="width: 45%;">
+                    <h2>Players</h2>
+                    {% for player in chooseable_players %}
+                        {% if player.guessed_out %}
+                            <label style="text-decoration: line-through;">
+                        {% else %}
+                            <label>
+                        {% endif %}
+                            {{ player.name }}
+                        </label><br>
+                    {% endfor %}
+                </div>
+                
+                <div style="width: 45%;">
+                    <h2>Answers</h2>
+                    {% for answer in chooseable_answers %}
+                        {% if answer.player.guessed_out %}
+                            <label style="text-decoration: line-through;">
+                        {% else %}
+                            <label>
+                        {% endif %}
+                            {{ answer.answer_text }}
+                        </label><br>
+                    {% endfor %}
+                </div>
+            </form>
+        </div>
+        <br>
+        <br>
+
+        <form method="get" action="{% url 'guess' pk=game_id %}">
             {% csrf_token %}
-            <div style="width: 45%;">
-                <h2>Players</h2>
-                {% for player in chooseable_players %}
-                    {% if player.guessed_out %}
-                        <label style="text-decoration: line-through;">
-                    {% else %}
-                        <label>
-                    {% endif %}
-                        <input type="radio" name="player" value="{{ player.id }}" onchange="checkSelection()">
-                        {{ player.name }}
-                    </label><br>
-                {% endfor %}
+            <h2>{{ guessing_player }} is guessing...</h2>
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
             </div>
-            
-            <div style="width: 45%;">
-                <h2>Answers</h2>
-                {% for answer in chooseable_answers %}
-                    {% if answer.player.guessed_out %}
-                        <label style="text-decoration: line-through;">
-                    {% else %}
-                        <label>
-                    {% endif %}
-                        <input type="radio" name="answer" value="{{ answer.id }}" onchange="checkSelection()">
-                        {{ answer.answer_text }}
-                    </label><br>
-                {% endfor %}
-            </div>
+            <br>
+            <button class="standard-button" type="submit">Check</button>
         </form>
-    </div>
 
-    <br>
 
-    <div style="display: flex; justify-content: center; margin-top: 20px;">
-        <button id="submitBtn" style="display: none;" onclick="submitForm()">Submit Guess</button>
-    </div>
 
-    <script>
-        function checkSelection() {
-            var playerChecked = false;
-            var answerChecked = false;
 
-            // Check if a player is selected
-            var playerRadios = document.getElementsByName("player");
-            for (var i = 0; i < playerRadios.length; i++) {
-                if (playerRadios[i].checked) {
-                    playerChecked = true;
-                    break;
-                }
-            }
-
-            // Check if an answer is selected
-            var answerRadios = document.getElementsByName("answer");
-            for (var i = 0; i < answerRadios.length; i++) {
-                if (answerRadios[i].checked) {
-                    answerChecked = true;
-                    break;
-                }
-            }
-
-            // Show submit button if both player and answer are selected
-            if (playerChecked && answerChecked) {
-                document.getElementById("submitBtn").style.display = "block";
-            } else {
-                document.getElementById("submitBtn").style.display = "none";
-            }
-        }
-
-        function submitForm() {
-            document.getElementById("guessForm").submit();
-        }
-    </script>
-
+    {% endif %}
 {% endblock %}

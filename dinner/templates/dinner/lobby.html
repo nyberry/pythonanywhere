@@ -1,25 +1,39 @@
 {% extends "dinner/layout.html" %}
 {% load static %}
+
 {% block title %}
     Question
 {% endblock %}
 
 {% block main %}
-    <h1>{{ question.question_text }}</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Answer</button>
-    </form>
-
-    <h2>Answers so far:</h2>
-    <ul>
-        {% for answer in answers %}
-            {% if answer.player.guessed_out %}
-            <li style="text-decoration: line-through;">{{ answer.answer_text }}</li>
+    <h1>Guests at the table</h1>
+    <br><br>
+        {% for player in players %}
+            {% if player == host %}
+                <h2>{{ player.name }} (host)</h2>
             {% else %}
-            <li>{{ answer.answer_text }}</li>
+                <h2>{{ player.name }}</h2>
             {% endif %}
         {% endfor %}
-    </ul>
+    <br>
+    <img src="{% static 'images/wine.jpg' %}" class="img-fluid" alt="Guests arriving" style = "width: 200px";>
+
+    <br><br>
+    {% if current_player == host %}
+        <form method="post" action="{% url 'lobby' pk=game_id %}">
+            {% csrf_token %}
+            <button type="submit" class="standard-button" name = "start" value = "start">Start the game</button>
+        </form>
+    {% else %}
+        <h3>Waiting for {{ host }} to start the game</h3>
+        <br>
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <br>
+        <form method="post" action="{% url 'lobby' pk=game_id %}">
+            {% csrf_token %}
+            <button type="submit" class="standard-button" name = "check" value = "check">Check</button>
+        </form>
+    {% endif %}
 {% endblock %}

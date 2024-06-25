@@ -10,6 +10,11 @@
         <img src="{% static 'images/dinnertable.jpg' %}" class="img-fluid" alt="The Dinner Party Game">
         <br><br>
         <h1>{{ host }} is thinking of a question</h1>
-        <button type="submit">Check</button>
+        <br>
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <br>
+        <button class="standard-button" type="submit">Check</button>
     </form>
 {% endblock %}

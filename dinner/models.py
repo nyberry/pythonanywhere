@@ -15,16 +15,19 @@ class Game(models.Model):
         (ABANDONED, 'Abandoned'),
     ]
     
-    creator = models.ForeignKey('Player', on_delete=models.CASCADE, related_name='created_games', null=True, blank=True)
+    host = models.ForeignKey('Player', on_delete=models.CASCADE, related_name='hosted_games', null=True, blank=True)
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default=LOBBY)
 
     def __str__(self):
-        return f"Game {self.id} created by {self.creator}"
+        return f"Game {self.id} created by {self.host}"
 
 
 class Player(models.Model):
     name = models.CharField(max_length=30, unique=True)
+    guessing = models.BooleanField(default=False)
     guessed_out = models.BooleanField(default=False)
+    has_viewed_result = models.BooleanField(default=False)
+    bot = models.BooleanField(default=False)
     game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='players', null=True, blank=True)
 
     def __str__(self):
