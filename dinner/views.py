@@ -5,6 +5,7 @@ from .models import Player, Game, Question, Answer, Guess
 from .forms import QuestionForm, AnswerForm, PlayerRegistrationForm
 from .helpers import registration_required
 from django.db import IntegrityError
+from django.apps import apps
 import random
 from random import shuffle
 
@@ -443,6 +444,11 @@ def reset_game(request):
     # declare the game abandoned
     game.status = 'abandoned'
     game.save()
+
+    # delete all models
+    models = apps.get_models()
+    for model in models:
+        model.objects.all().delete()
 
     # redirect to landing page
     return redirect('join_game')
