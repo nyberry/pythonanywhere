@@ -155,8 +155,8 @@ def lobby(request, pk):
 
             # Create bot players to make the minimum number for a game
             MIN_PLAYERS = 6
-            bot_names = ['Harrybot', 'Charliebot', 'Boticelli', 'C3PO', 'Elizabot']
-            bot_answers = ['Cheese', 'Custard', 'Fish', 'Wallpaper', 'Ironing', 'in the washing machine', "they can't swim", 'fifteen', 'Spain']
+            bot_names = ['Harry', 'Charlie', 'Boticelli', 'Robert', 'Elizabot']
+            bot_answers = ['Cheese', 'Custard', 'Fish', 'Wallpaper', 'Ironing', 'Washing machine', "Swimming", 'Fifteen', 'Spain','Rarely']
             players = Player.objects.filter(game=pk)
             game = Game.objects.get(pk=pk)
 
@@ -226,17 +226,16 @@ def guess(request, pk):
         players.update(has_viewed_result=False)
     
     for p in human_players:
-        print (p.name, p.has_viewed_result)
+        print (p.name,"has viewed result:", p.has_viewed_result)
 
-    # redirect to the results route if any player has status 'has viewed result'
+    # redirect to the results route if any player has status 'has viewed result' because this means the guess is in
     if players.filter(has_viewed_result=True).exists():
         return redirect('view_result',pk=pk)
     
-    # Fetch and shuffle players who are not guessed out, and exclude the current player from the list of chooseable players
+    # Fetch players who are not guessed out, and exclude the current player from the list of chooseable players
     remaining_players = players.filter(guessed_out=False)
     chooseable_players = list(remaining_players.exclude(id=current_player.id))
-    shuffle(chooseable_players)
-    
+ 
     # Fetch and shuffle answers for the current game where the player is not guessed out
     answers = Answer.objects.filter(question__game=game)
     remaining_answers = answers.filter(player__guessed_out=False)
@@ -290,8 +289,6 @@ def guess(request, pk):
          # no guess was made, refresh button was pressed sojust refresh the page
         else:
             pass
-        
-       
 
     context = {
         'current_player': current_player,
@@ -321,10 +318,17 @@ def view_result(request,pk):
     # Once the results have been viewed, update the player has_viewed_result to True
     if request.method=='POST':
      
+        # Recount the humans players. Check if only one player remains in the game & redirect to winner page if so.
+        remaining_human_players = players.filter(game=game, bot=False, guessed_out=False )
+
+        # Check if only one player remains in the game & redirect to winner page if so.
+        if remaining_human_players.count() == 1:
+            return redirect('winner_page',pk=pk)
+
         # if all remaining human players have viewed the result, we can go to guess page
-        remaining_human_players = players.filter(bot=False, guessed_out=False )
         if not remaining_human_players.filter(has_viewed_result=False).exists():
             return redirect('guess',pk=pk)
+        
         # also if none of the remaining human players have viewed if - this means that the next round has started and the player variables updated
         if not remaining_human_players.filter(has_viewed_result=True).exists():
             return redirect('guess',pk=pk)
@@ -448,15 +452,26 @@ def reset_game(request):
 def winner_page(request, pk):
 
     # retrieve game and current player from session data; update game status
+    game = get_object_or_404(Game, pk=pk)  
+    players = Player.objects.filter(game=game)
     current_player = Player.objects.get(name=request.session['player_name'])
-    game = get_object_or_404(Game, pk=pk)  # Retrieve the game object
+
+    # retrieve the remaining human player
+    remaining_human_player = players.filter(game=game, bot=False, guessed_out=False ).first()
+
+    # update the game status
     game.status = "finished"
     game.save()
     
     if request.method == 'POST':
         return redirect('start_new_game')
     else:
-        return render(request, 'dinner/winner_page.html', {'current_player':current_player, 'game_id':pk})
+        context ={
+            'game_id':pk,
+            'winner':remaining_human_player,
+            'current_player':current_player
+            }
+        return render(request, 'dinner/winner_page.html', context)
 
 @registration_required
 def loser_page(request, pk):

@@ -31,9 +31,20 @@
             <span class="visually-hidden">Loading...</span>
         </div>
         <br>
-        <form method="post" action="{% url 'lobby' pk=game_id %}">
+        <!--<form method="post" action="{% url 'lobby' pk=game_id %}">
             {% csrf_token %}
-            <button type="submit" class="standard-button" name = "check" value = "check">Check</button>
-        </form>
+            // <button type="submit" class="standard-button" name = "check" value = "check">Check</button>
+        </form>-->
     {% endif %}
+
+    <script>
+        // Function to check for updates
+        function refreshPage() {
+          location.reload();
+        }
+    
+        // Repeat check
+        setInterval(refreshPage, 5000); 
+    </script>
+
 {% endblock %}

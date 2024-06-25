@@ -6,7 +6,12 @@
 {% block main %}
     <div class="text-center">
         <br><br>
+        {% if winner == current_player %}
         <h1>Congratulations... you won!</h1>
+        {% else %}
+        <h1>{{ winner }} won!</h1>
+        {% endif %}
+
         <a href="/">
             <img src="{% static 'images/cafe.jpg' %}" class="img-fluid" alt="Winner">
         </a>

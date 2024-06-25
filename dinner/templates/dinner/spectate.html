@@ -48,4 +48,15 @@
         <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
+
+        <script>
+            // Function to check for updates
+            function refreshPage() {
+              location.reload();
+            }
+        
+            // Repeat check
+            setInterval(refreshPage, 3000); 
+        </script>
+
 {% endblock %}

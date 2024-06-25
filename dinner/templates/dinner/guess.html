@@ -130,12 +130,21 @@
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
-            <br>
+            <!--<br>
             <button class="standard-button" type="submit">Check</button>
+            -->
         </form>
 
 
-
+        <script>
+            // Function to check for updates
+            function refreshPage() {
+              location.reload();
+            }
+        
+            // Repeat check
+            setInterval(refreshPage, 3000); 
+        </script>
 
     {% endif %}
 {% endblock %}

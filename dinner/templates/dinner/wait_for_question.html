@@ -15,6 +15,19 @@
             <span class="visually-hidden">Loading...</span>
         </div>
         <br>
+        <!--
         <button class="standard-button" type="submit">Check</button>
+    -->
     </form>
+
+    <script>
+        // Function to check for updates
+        function refreshPage() {
+          location.reload();
+        }
+    
+        // Repeat check
+        setInterval(refreshPage, 5000); 
+    </script>
+
 {% endblock %}
