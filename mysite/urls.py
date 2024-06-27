@@ -16,8 +16,11 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from dinner import helpers
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('dinner.urls')),
 ]
+
+handler404 = 'dinner.helpers.custom_404'
