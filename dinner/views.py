@@ -352,7 +352,7 @@ def spectate(request, pk):
 
     # redirect to winner page if current game session is 'finished'
     if game.status == 'finished':
-        return redirect('winner_page')
+        return redirect('winner_page', pk=pk)
     
     # Fetch players who are not guessed out
     remaining_players = players.filter(guessed_out=False)
@@ -361,15 +361,42 @@ def spectate(request, pk):
     answers = Answer.objects.filter(question__game=game)
     remaining_answers = answers.filter(player__guessed_out=False)
     
-    context = {
-        'current_player': current_player,
-        'guessing_player': guessing_player,
-        'question': game.question,
-        'chooseable_players': remaining_players,
-        'chooseable_answers': remaining_answers
-            }
+    if game.status == 'guess':
 
-    return render(request, 'dinner/spectate.html', context)
+        context = {
+            'current_player': current_player,
+            'guessing_player': guessing_player,
+            'question': game.question,
+            'chooseable_players': remaining_players,
+            'chooseable_answers': remaining_answers
+                }
+
+        return render(request, 'dinner/spectate.html', context)
+    
+    if game.status == 'view_result':
+    
+        answers = Answer.objects.filter(question__game=game).order_by('display_order')
+
+        # fetch the most recent guess object
+        guesses = Guess.objects.all()
+        most_recent_guess_id = guesses.aggregate(Max('id'))['id__max']
+        guess = get_object_or_404(Guess, pk=most_recent_guess_id)
+
+        context = {
+            'current_player': current_player,
+            'players': players,
+            'answers' : answers,
+            'guesser': guess.guesser,
+            'correct': guess.correct,
+            'game': game,
+            'guessed_player': guess.player,
+            'guessed_answer': guess.answer
+            }
+        return render(request, 'dinner/result.html', context)
+
+    
+    return redirect('join_game')
+
 
 
 @registration_required

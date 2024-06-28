@@ -1,0 +1,62 @@
+{% extends "dinner/layout.html" %}
+{% load static %}
+
+{% block title %}
+    Guess
+{% endblock %}
+
+{% block main %}
+    <br><br>
+        <h1>You are out.</h1>
+        <h2>It's {{ guessing_player }}'s turn.</h2>
+        <br>
+        <h2>{{ question }}</h2>
+        <br>
+        <div style="display: flex; justify-content: space-between; padding-top: 20px;">
+            <form method="post" id="guessForm" style="width: 100%; display: flex; justify-content: space-between;">
+                {% csrf_token %}
+                <div style="width: 45%;">
+                    <h2>Players</h2>
+                    {% for player in chooseable_players %}
+                        {% if player.guessed_out %}
+                            <label style="text-decoration: line-through;">
+                        {% else %}
+                            <label>
+                        {% endif %}
+                            {{ player.name }}
+                        </label><br>
+                    {% endfor %}
+                </div>
+                
+                <div style="width: 45%;">
+                    <h2>Answers</h2>
+                    {% for answer in chooseable_answers %}
+                        {% if answer.player.guessed_out %}
+                            <label style="text-decoration: line-through;">
+                        {% else %}
+                            <label>
+                        {% endif %}
+                            {{ answer.answer_text }}
+                        </label><br>
+                    {% endfor %}
+                </div>
+            </form>
+        </div>
+        <br>
+        <br>
+        <h2>{{ guessing_player }} is guessing...</h2>
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+
+        <script>
+            // Function to check for updates
+            function refreshPage() {
+              location.reload();
+            }
+        
+            // Repeat check
+            setInterval(refreshPage, 3000); 
+        </script>
+
+{% endblock %}
