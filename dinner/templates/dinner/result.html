@@ -7,8 +7,71 @@
 
 {% block main %}
     <br>
-    <h1>{{ guesser.name }} guessed that {{ guessed_player.name }}'s answer is {{ guessed_answer }}.</h1>
-    <br><br>
+    <h1>
+    {% if guesser == current_player %}
+    You
+    {% else %}
+    {{ guesser.name }}
+    {% endif %}
+    guessed that
+    {% if guessed_player == current_player %}
+    your
+    {% else %}
+    {{ guessed_player }}'s
+    {% endif %}
+    answer is {{ guessed_answer.answer_text }}.
+    </h1>
+    <br>
+    
+    <div style="display: flex; justify-content: space-between; padding-top: 20px; width: 100%;">
+        <div style="width: 45%;">
+            {% for player in players %}
+            {% if player == guessed_player %}
+                {% if correct %}
+                    <label style="color: green; font-weight: bold;">--
+                {% else %}
+                    <label style="color: red; font-weight: bold">--
+                {% endif %}
+            {% elif player.guessed_out %}
+                <label style="text-decoration: line-through;">
+            {% else %}
+                <label>
+            {% endif %}
+                {% if player.name == current_player.name %}
+                    You
+                {% else %}
+                    {{ player.name }}
+                {% endif %}
+            </label><br>
+        {% endfor %}
+        </div>
+
+        <div style="width: 45%;">
+            {% for answer in answers %}
+                {% if guessed_answer.answer_text == answer.answer_text %}
+                    {% if correct %}
+                        <label style="color: green; font-weight: bold;">--
+                    {% else %}
+                        <label style="color: red; font-weight: bold;">--
+                    {% endif %}
+                {% elif answer.player.guessed_out %}
+                    <label style="text-decoration: line-through;">
+                {% else %}
+                    <label>
+                {% endif %}
+                
+                {% if answer.player == current_player %}
+                    {{ answer.answer_text }} (you)
+                {% else %}
+                    {{ answer.answer_text }}
+                {% endif %}
+                
+                </label><br>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <br>
     {% if correct %}
         <h1>This is CORRECT</h1>
     {% else %}
@@ -16,52 +79,28 @@
     {% endif %}
     <br>
 
-    <!-- Use a button instead of an anchor -->
-    <button id="viewResultsBtn" class="standard-button">OK</button>
+    <form method="post">
+        {% csrf_token %}     
+        <button type="submit" class="standard-button">OK</button>
+    </form>
     
-    {% if  current_player.has_viewed_result %}
-        <h3> Waiting for the other guests </h3>
+    {% if current_player.has_acknowledged_result %}
+        <br><br>
+        Waiting for the other guests to acknowledge
 
-        <br>
+        <br><br>
         <div class="spinner-border" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
-        <br>
 
         <script>
             // Function to check for updates
             function refreshPage() {
-              location.reload();
+                location.reload();
             }
         
             // Repeat check
-            setInterval(refreshPage, 3000); 
+            setInterval(refreshPage, 2000); 
         </script>
-        
     {% endif %}
-
-    <script>
-        document.getElementById('viewResultsBtn').addEventListener('click', function() {
-            // Create a form element
-            var form = document.createElement('form');
-
-            // Set form attributes (action and method)
-            form.setAttribute('action', "{% url 'view_result' game.pk %}");
-            form.setAttribute('method', 'POST');
-
-            // Create a hidden input field for CSRF token
-            var csrfToken = document.createElement('input');
-            csrfToken.setAttribute('type', 'hidden');
-            csrfToken.setAttribute('name', 'csrfmiddlewaretoken');
-            csrfToken.setAttribute('value', '{{ csrf_token }}');
-            form.appendChild(csrfToken);
-
-            // Submit the form
-            document.body.appendChild(form);
-            form.submit();
-        });
-    </script>
-
-
-
 {% endblock %}

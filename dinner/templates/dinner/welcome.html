@@ -1,0 +1,35 @@
+{% extends "dinner/layout.html" %}
+{% load static %}
+{% block title %}
+    Welcome
+{% endblock %}
+
+{% block main %}
+    <form method="post">
+        {% csrf_token %}
+        <img src="{% static 'images/dinnertable.jpg' %}" class="img-fluid" alt="The Dinner Party Game">
+        <br><br>
+        <h1>Welcome, {{ current_player.name }}</h1>
+        {% if other_players %}
+            At the table:
+            {% for player in other_players %}
+            {% if forloop.counter0 > 0 %}, {% endif %}
+            {{ player.name }}
+        {% endfor %}
+        {% endif %}
+
+        <br><br>
+
+        {% if not game %}
+            <button type="submit" class="standard-button">New game</button>
+        {% elif game.status == "get_question" or game.status == "lobby" %}
+            <button type="submit" class="standard-button">Join {{ game.host.name }}'s game</button>
+        {% elif game.status == "guessing" or game.status == "viewing_result" %}
+            There is a game in progress.
+            You can watch for now, then join the next game.
+            <button type="submit" class="standard-button">Watch {{ game.host.name }}'s game</button>                
+        {% else %}
+            <button type="submit" class="standard-button">Start a new game</button>
+        {% endif %}
+    </form>
+{% endblock %}

@@ -15,9 +15,34 @@
         <a href="/">
             <img src="{% static 'images/cafe.jpg' %}" class="img-fluid" alt="Winner">
         </a>
+
+        {% if current_player.has_acknowledged_winner %}
+        <br><br>
+        Waiting for the other guests to acknowledge
+
+        <br><br>
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+
+        <script>
+            // Function to check for updates
+            function refreshPage() {
+                location.reload();
+            }
+        
+            // Repeat check
+            setInterval(refreshPage, 2000); 
+        </script>
+        {% else %}
         <form method="post" action="{% url 'winner_page' game_id %}">
             {% csrf_token %}
             <button type="submit" class="standard-button">OK</button>
         </form>
+        {% endif %}
     </div>
+
+ 
+    
+
 {% endblock %}

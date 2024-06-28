@@ -124,17 +124,11 @@
         <br>
         <br>
 
-        <form method="get" action="{% url 'guess' pk=game_id %}">
-            {% csrf_token %}
             <h2>{{ guessing_player }} is guessing...</h2>
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
-            <!--<br>
-            <button class="standard-button" type="submit">Check</button>
-            -->
-        </form>
-
+            
 
         <script>
             // Function to check for updates

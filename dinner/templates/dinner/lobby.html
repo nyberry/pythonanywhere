@@ -8,33 +8,42 @@
 {% block main %}
     <h1>Guests at the table</h1>
     <br><br>
-        {% for player in players %}
-            {% if player == host %}
-                <h2>{{ player.name }} (host)</h2>
-            {% else %}
-                <h2>{{ player.name }}</h2>
-            {% endif %}
+        {% for player in players_with_answers %}
+            <h2>{{ player.name }}{% if player == host %}(host){% endif %}</h2>
         {% endfor %}
+        {% for player in players_without_answers %}
+            <h2 class = "grey">{{ player.name }}(answering)</h2>
+        {% endfor %}
+
     <br>
     <img src="{% static 'images/wine.jpg' %}" class="img-fluid" alt="Guests arriving" style = "width: 200px";>
 
     <br><br>
     {% if current_player == host %}
-        <form method="post" action="{% url 'lobby' pk=game_id %}">
-            {% csrf_token %}
-            <button type="submit" class="standard-button" name = "start" value = "start">Start the game</button>
-        </form>
+
+        {% if players_with_answers|length >= 2 %}
+            <form method="post" action="{% url 'lobby' pk=game_id %}">
+                {% csrf_token %}
+                <button type="submit" class="standard-button" name = "start" value = "start">Start the game</button>
+            </form>
+
+        {% else %}
+            <h3>Waiting for more guests to join</h3>
+            <br>
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+
+        {% endif %}
+
     {% else %}
+
         <h3>Waiting for {{ host }} to start the game</h3>
         <br>
         <div class="spinner-border" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
-        <br>
-        <!--<form method="post" action="{% url 'lobby' pk=game_id %}">
-            {% csrf_token %}
-            // <button type="submit" class="standard-button" name = "check" value = "check">Check</button>
-        </form>-->
+
     {% endif %}
 
     <script>

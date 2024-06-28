@@ -38,13 +38,17 @@ class QuestionForm(forms.ModelForm):
         return question_text
 
 
+
 class AnswerForm(forms.ModelForm):
     class Meta:
         model = Answer
-        fields = ['answer_text']
+        fields = ['answer_text'] 
+
         labels = {
             'answer_text': '',
         }
+
         widgets = {
-            'answer_text': forms.TextInput(attrs={'id': 'focus-text-field', 'class': 'form-control'})
+            'answer_text': forms.TextInput(attrs={'id': 'focus-text-field', 'class': 'form-control'}),
+            'display_order': forms.HiddenInput(),  # Hide the display_order field
         }

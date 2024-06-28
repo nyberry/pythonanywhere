@@ -3,21 +3,47 @@ from django.urls import reverse
 from django.db.models import Max
 from .models import Player, Game, Question, Answer, Guess
 from .forms import QuestionForm, AnswerForm
-from .helpers import registration_required, register_player, log_out, custom_404
+from .helpers import registration_required, log_in, log_out, custom_404, reset_game, shuffle_answers, create_bots
 from django.db import IntegrityError
 import random
 from random import shuffle
+
+# minimum numeber of players - bots will be created
+MIN_PLAYERS = 6
+
+@registration_required
+def front_door(request):
+
+    # This is the landing page immediately after a player registers
+
+    if request.method == "POST":
+        return redirect('join_game')
+
+    # Load the player data
+    players = Player.objects.all()
+    current_player = players.get(name=request.session['player_name'])
+    other_players = players.exclude(name = current_player.name)
+
+    # Check if there are any games. If not, invite the user to start a game
+    games = Game.objects.all()
+    if not games:
+        return render(request, 'dinner/welcome.html', {'other_players':other_players, 'current_player':current_player, 'game':None})
+
+    # else, load the most recent game and invote the player to join it at the appropriate route
+    most_recent_game_id = games.aggregate(Max('id'))['id__max']
+    game = get_object_or_404(Game, pk=most_recent_game_id)
+    return render(request, 'dinner/welcome.html', {'other_players':other_players, 'current_player':current_player, 'game':game})
 
 
 @registration_required
 def join_game(request):
 
-    # This is the landing page. If there are no games, create a game now.
+    # This is the landing page for registered players. If there are no games, create a game now.
     games = Game.objects.all()
     if not games:
         return redirect('start_new_game')
 
-    # Load the most recently created game & store it's id in the session data
+     # Load the most recently created game & store its id in the session data
     most_recent_game_id = games.aggregate(Max('id'))['id__max']
     game = get_object_or_404(Game, pk=most_recent_game_id)
     request.session['game']=game.pk
@@ -37,7 +63,7 @@ def join_game(request):
         return redirect(reverse('ask_question', kwargs={'pk': most_recent_game_id}))
 
     # Else if the game has active status, direct the player to the spectator route for that game
-    elif game.status == "active":
+    elif game.status == "guessing" or game.status == "viewing_result":
          return redirect(reverse('spectate', kwargs={'pk': most_recent_game_id}))
     
      # if the game has finished status, direct the player to the wait_for_question page
@@ -45,25 +71,19 @@ def join_game(request):
         current_player = Player.objects.get(name=request.session['player_name'])
         winner = Player.objects.filter(game=game, guessed_out=False)[0]
         return render(request,'dinner/wait_for_question.html',{'host':winner.name, 'current_player':current_player})
+    
+    print (f'game status {game.status}')
 
-    # Else if the last game has status abandoned, create a new game
-    elif game.status == "abandoned":
-        return redirect('start_new_game')
 
 
 @registration_required
 def ask_question(request, pk):
+    # This is the page where players are asked a question, and then they are sent to the lobby
 
-    # This is the lobby page where players are asked a question, and then wait until the game starts.
-
-    # Load the game object and store it's ID (primary key) in the session data
+    # Load the game object
     game = get_object_or_404(Game, pk=pk)
-
-    # redirect to join page if the current game session is 'abandoned'
-    if game.status == 'abandoned':
-        return redirect('join_game')
-
-    # Fetch the current player object from session data, and update their game and guessed status fields
+    
+    # Fetch and initialise the current player object from session data
     current_player = Player.objects.get(name=request.session['player_name'])
     current_player.game = game
     current_player.guessed_out= False
@@ -77,33 +97,38 @@ def ask_question(request, pk):
     question = game.question 
     answers = Answer.objects.filter(question=question)
 
-    # Check if the current player has already answered this question. If so, redirect to guess page
-    has_answered = Answer.objects.filter(question=question, player=current_player).exists()
+    # Check if the current player has already answered this question. If so, redirect to lobby
+    has_answered = answers.filter(player=current_player).exists()
     if has_answered:
         return redirect(reverse('lobby', kwargs={'pk': pk}))
 
-    # Otherwise, render the page to ask the question using POST method
-    
+    # If the form has been returned by POST method
     if request.method == "POST":
+
         form = AnswerForm(request.POST)
+        
         if form.is_valid():
             answer = form.save(commit=False)
             answer.question = question
-            answer.player = current_player 
+            answer.player = current_player
+            answer.display_order = 0 
             try:
                 answer.save()
+                print ("answer saved")
             except IntegrityError:
                 form.add_error(None, "You have already answered this question.")
-            return redirect('ask_question', pk=game.pk)
-    else:
+            return redirect(reverse('lobby', kwargs={'pk': pk}))
+
+    # render the form to get question
         
-        context = {
-            'form': AnswerForm(),
-            'current_player': current_player,
-            'question': question
-            }
-    
+    context = {
+        'form': AnswerForm(),
+        'current_player': current_player,
+        'question': question
+        }
+
     return render(request, 'dinner/ask_question.html', context)
+
 
 @registration_required
 def lobby(request, pk):
@@ -114,26 +139,14 @@ def lobby(request, pk):
     # if the host has pressed the button to start the game
     if request.method == "POST":
         if request.POST.get('start'):
-            game.status ="active"
+            game.status ="guessing"
             game.save()
 
-            # Create bot players to make the minimum number for a game
-            MIN_PLAYERS = 6
-            bot_names = ['Harry', 'Charlie', 'Boticelli', 'Robert', 'Elizabot']
-            bot_answers = ['Cheese', 'Custard', 'Fish', 'Wallpaper', 'Ironing', 'Washing machine', "Swimming", 'Fifteen', 'Spain','Rarely']
-            players = Player.objects.filter(game=pk)
-            game = Game.objects.get(pk=pk)
+            # Call the function to add some bot players
+            create_bots(MIN_PLAYERS,pk)
 
-            if len(players) < MIN_PLAYERS:
-                bots_to_create = MIN_PLAYERS - len(players)
-                for i in range(bots_to_create):
-
-                    # Create the bot player and associate with the current game            
-                    bot = Player.objects.create(name=f'{bot_names[i]}{pk}', game=game, bot = True)
-                    
-                    # Create the bot's answer and associate with the bot and the current game
-                    question = Question.objects.filter(game=game).first()
-                    Answer.objects.create(question=question, player=bot, answer_text=random.choice(bot_answers))
+            # Call the function to shuffle the answers
+            shuffle_answers()
 
             # Select a random player to be the guesser, and set all the others to not be guessers
             players = Player.objects.filter(game=pk)
@@ -144,7 +157,7 @@ def lobby(request, pk):
             guesser.save()
 
     # redirect to guess page if the current game session is now active
-    if game.status == 'active':
+    if game.status == 'guessing':
         return redirect('guess', pk=pk)
 
     # redirect to join page if the current game session is not lobby
@@ -156,11 +169,13 @@ def lobby(request, pk):
     players = Player.objects.filter(game=game)
     current_player = players.get(name=request.session['player_name'])
     players_with_answers = players.filter(answer__question=current_question).distinct()
+    players_without_answers = players.exclude(id__in=players_with_answers.values_list('id', flat=True))
 
     context = {
         'game_id': pk,
         'question': game.question,
-        'players': players_with_answers,
+        'players_with_answers': players_with_answers,
+        'players_without_answers': players_without_answers,
         'current_player': current_player,
         'host': game.host
     }
@@ -176,35 +191,19 @@ def guess(request, pk):
     current_player = players.get(name=request.session['player_name'])
     guessing_player = Player.objects.filter(guessing=True).first()
 
-    # redirect to join page if the current game session is not active
-    if game.status == 'abandoned':
-        return redirect('join_game')
-
-    # redirect to loser page if current player is guessed out
-    if current_player.guessed_out==True:
-         return redirect('loser_page',pk=pk)
-    
-    # if all of the remaining human players have status "has viewed result", then we are done with the results page. reset all flags to False
-    human_players = players.filter(game=game, bot=False, guessed_out = False)
-    if not human_players.filter(has_viewed_result=False).exists():
-        players.update(has_viewed_result=False)
-    
-    for p in human_players:
-        print (p.name,"has viewed result:", p.has_viewed_result)
-
-    # redirect to the results route if any player has status 'has viewed result' because this means the guess is in
-    if players.filter(has_viewed_result=True).exists():
+    # redirect to the results route if the game status requires
+    if game.status == 'viewing_result':
+        print (f'redirecting {current_player} to see the results')
         return redirect('view_result',pk=pk)
     
-    # Fetch players who are not guessed out, and exclude the current player from the list of chooseable players
+    # Fetch chooseable players
     remaining_players = players.filter(guessed_out=False)
     chooseable_players = list(remaining_players.exclude(id=current_player.id))
  
-    # Fetch and shuffle answers for the current game where the player is not guessed out
-    answers = Answer.objects.filter(question__game=game)
+    # Fetch the sorted list of choosable answers
+    answers = Answer.objects.filter(question__game=game).order_by('display_order')
     remaining_answers = answers.filter(player__guessed_out=False)
     chooseable_answers = list(remaining_answers.exclude(player__id=current_player.id))
-    shuffle(chooseable_answers)
 
     # handle the guess
     if request.method == "POST":
@@ -227,32 +226,12 @@ def guess(request, pk):
                 correct=(guessed_player == guessed_answer.player)
             )
 
-            if guess.correct:
-                guess.player.guessed_out = True
-                guess.player.save()
-
-            # Recount the humans players. Check if only one player remains in the game & redirect to winner page if so.
-            human_players = players.filter(game=game, bot=False, guessed_out = False)
-            if human_players.count() == 1:
-                return redirect('winner_page',pk=pk)
-                
-            if not guess.correct:
-
-                # it's the next player's turn now, unless they are a bot
-                current_player.guessing = False
-                current_player.save()
-                if guessed_player.bot == False:
-                    guesser = guessed_player
-                else:
-                    guesser = random.choice(human_players.exclude(name=current_player.name))
-                guesser.guessing = True
-                guesser.save()
+            game.status = "viewing_result"
+            game.save()
 
             return redirect('view_result', pk=pk)
-        
-         # no guess was made, refresh button was pressed sojust refresh the page
-        else:
-            pass
+
+    # render the guess page
 
     context = {
         'current_player': current_player,
@@ -266,49 +245,97 @@ def guess(request, pk):
 
 
 @registration_required
-def view_result(request,pk):
+def view_result(request, pk):
 
     # this is where players are directed if there a a result to view.
-    # They will continue to be directed here untill all human players who are not guessed out have viewed it.
+    # They will continue to be directed here until remaining players have acknowledged
 
-    # fetch the game and player objects
-    game = get_object_or_404(Game, pk=pk) 
+    # fetch the game object
+    game = get_object_or_404(Game, pk=pk)
+
+    # if all players have acnowledged the result, go back to guessing
+    if game.status == 'guessing':
+        return redirect('guess',pk=pk)
+    
+    # fetch the most recent guess object
+    guesses = Guess.objects.all()
+    most_recent_guess_id = guesses.aggregate(Max('id'))['id__max']
+    guess = get_object_or_404(Guess, pk=most_recent_guess_id)
+
+    # fetch the player objects
     players = Player.objects.filter(game=game)
     current_player = players.get(name=request.session['player_name'])
+    remaining_human_players = players.filter(game=game, bot=False, guessed_out=False )
 
-    # fetch the most recent guess
-    most_recent_guess = Guess.objects.filter(game_id=pk).order_by('-id').first()
+    # Winner?
+    remaining_human_players = players.filter(game=game, bot=False, guessed_out=False )
+    if remaining_human_players.count() == 1:
+        players.update(has_acknowledged_winner=False)
+        return redirect('winner_page',pk=pk)
 
-    # Once the results have been viewed, update the player has_viewed_result to True
+    # Once the results have been viewed, the player clicks OK to return here:
     if request.method=='POST':
-     
-        # Recount the humans players. Check if only one player remains in the game & redirect to winner page if so.
-        remaining_human_players = players.filter(game=game, bot=False, guessed_out=False )
 
-        # Check if only one player remains in the game & redirect to winner page if so.
-        if remaining_human_players.count() == 1:
-            return redirect('winner_page',pk=pk)
+        # process the actual guess, if this player has made it
+        if current_player == guess.guesser:
+  
+            # Is a player out?
+            if guess.correct:
+                guess.player.guessed_out = True
+                guess.player.save()
+                        
+            # Now a winner?
+            remaining_human_players = players.filter(game=game, bot=False, guessed_out=False )
+            if remaining_human_players.count() == 1:
+                players.update(has_acknowledged_winner=False)
+                return redirect('winner_page',pk=pk)
+                    
+            # Change guesser if not correct
+            if not guess.correct:
+                
+                current_player.guessing = False
+                current_player.save()
 
-        # if all remaining human players have viewed the result, we can go to guess page
-        if not remaining_human_players.filter(has_viewed_result=False).exists():
+                if guess.player.bot == False:
+                    guesser = guess.player
+
+                else:
+                    eligible_players = remaining_human_players.exclude(name=current_player.name)
+                    guesser = random.choice(eligible_players)
+                    guesser.guessing = True
+                    guesser.save()
+
+        # is the current player out? (They still need to acknowledge the result)
+        if current_player.guessed_out:
+            redirect ('loser_page',pk=pk)
+
+        # acknowledge that the current player has viewed the results
+        current_player.has_acknowledged_result=True
+        current_player.save()
+        print (f'{current_player} has just acknowledged the result')
+
+        # if all remaining human players have viewed the result, reset status
+        if not remaining_human_players.filter(has_acknowledged_result=False).exists():
+            remaining_human_players.update(has_acknowledged_result = False)
+            game.status= 'guessing'
+            game.save()
+
+        if game.status == 'guessing':
             return redirect('guess',pk=pk)
         
-        # also if none of the remaining human players have viewed if - this means that the next round has started and the player variables updated
-        if not remaining_human_players.filter(has_viewed_result=True).exists():
-            return redirect('guess',pk=pk)
-        
-    # otherwise render the form again but will display a holding message
-
-    # acknowledge that the current plasyer has viewed the results
-    current_player.has_viewed_result=True
-    current_player.save()
+    # Render the form to show result
+    
+    answers = Answer.objects.filter(question__game=game).order_by('display_order')
 
     context = {
-        'guesser': most_recent_guess.guesser,
-        'correct': most_recent_guess.correct,
+        'current_player': current_player,
+        'players': players,
+        'answers' : answers,
+        'guesser': guess.guesser,
+        'correct': guess.correct,
         'game': game,
-        'guessed_player': most_recent_guess.player,
-        'guessed_answer': most_recent_guess.answer
+        'guessed_player': guess.player,
+        'guessed_answer': guess.answer
         }
     return render(request, 'dinner/result.html', context)
 
@@ -321,13 +348,9 @@ def spectate(request, pk):
     current_player = players.get(name=request.session['player_name'])
     guessing_player = Player.objects.filter(guessing=True).first()
 
-    # redirect to join page if the current game session is 'abandoned'
-    if game.status == 'abandoned':
-        return redirect('join_game')
-    
     # redirect to winner page if current game session is 'finished'
     if game.status == 'finished':
-        return redirect('join_game')
+        return redirect('winner_page')
     
     # Fetch players who are not guessed out
     remaining_players = players.filter(guessed_out=False)
@@ -360,15 +383,38 @@ def start_new_game(request):
         )
     request.session['game']=game.pk
 
-    # set all players to initial state
+    # get players objects
     players = Player.objects.all()
-    players.update(has_viewed_result=False)
+
+    # delete old bots
+    for player in players:
+        if player.bot == True:
+            player.delete()
+
+    # set players to initial state
+    for player in players:
+        print (f'Players: {players}')
+    players.update(has_acknowledged_result=False)
+    players.update(has_acknowledged_winner=True)
+
+    # refresh models
+    Question.objects.all().delete()
+    Answer.objects.all().delete()
+    Guess.objects.all().delete()
+
+    #debugging
+    print (f'Starting a new game {game.pk} with:')
+    print (f'host: {game.host}')
+    for player in players:
+        print (f'player: {player.name}')
+
 
     #redirect to get the question
     return redirect('get_question', pk=game.pk)
 
 
 
+@registration_required
 def get_question(request, pk):
 
     # retrieve current player and game objects from session data
@@ -396,46 +442,52 @@ def get_question(request, pk):
     }
     return render(request, 'dinner/start_new_game.html', context)
 
-
-@registration_required
-def reset_game(request):
-
-    # Retrieve the current game primary key from the session, and then the game
-    pk = request.session['game']
-    game = get_object_or_404(Game, pk=pk)
-
-    # declare the game abandoned
-    game.status = 'abandoned'
-    game.save()
-
-    # redirect to landing page
-    return redirect('join_game')
-
-
 @registration_required
 def winner_page(request, pk):
 
-    # retrieve game and current player from session data; update game status
+    # retrieve game and player objects
     game = get_object_or_404(Game, pk=pk)  
-    players = Player.objects.filter(game=game)
+    human_players = Player.objects.filter(game=game, bot=False)
     current_player = Player.objects.get(name=request.session['player_name'])
+    winner = human_players.filter(guessed_out=False ).first()
 
-    # retrieve the remaining human player
-    remaining_human_player = players.filter(game=game, bot=False, guessed_out=False ).first()
+    print (f'game = {game.pk}')
+    print (f'winner = {winner.name}')
+    print (f'game_status = {game.status}')
 
-    # update the game status
-    game.status = "finished"
-    game.save()
-    
+    # Confirmation form post
     if request.method == 'POST':
-        return redirect('start_new_game')
-    else:
-        context ={
-            'game_id':pk,
-            'winner':remaining_human_player,
-            'current_player':current_player
-            }
-        return render(request, 'dinner/winner_page.html', context)
+
+        # acknowledge that the winning player has viewed the results
+        current_player.has_acknowledged_winner=True
+        current_player.save()
+
+        # if all human players have viewed the result, reset status
+        if not human_players.filter(has_acknowledged_winner=False).exists():
+            game.status = "finished"
+            game.host = winner
+            game.save()
+
+        for player in human_players:
+            print(player.name, "acknowledged winner?", player.has_acknowledged_winner)
+
+    if game.status == 'finished':
+   
+        # if current player is winner, redirect to start new game
+        if current_player == winner:
+            return redirect('start_new_game')
+        
+        # otherwise, redirect to wait for question
+        else:
+            return redirect('join_game')
+    
+    # render the winner acknowledgement form
+    context ={
+        'game_id':pk,
+        'winner':winner,
+        'current_player':current_player
+        }
+    return render(request, 'dinner/winner_page.html', context)
 
 @registration_required
 def loser_page(request, pk):
@@ -444,7 +496,14 @@ def loser_page(request, pk):
     current_player = Player.objects.get(name=request.session['player_name'])
 
     if request.method == 'POST':
+        
+        # acknowledge that the current player has viewed the results
+        current_player.has_acknowledged_result=True
+        current_player.save()
+    
+        # redirect them to spectate
         return redirect('join_game')
-    else:
-        return render(request, 'dinner/loser_page.html', {'current_player':current_player, 'game_id':pk})
+    
+    # render loser page
+    return render(request, 'dinner/loser_page.html', {'current_player':current_player, 'game_id':pk})
  
