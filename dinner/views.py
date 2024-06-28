@@ -306,8 +306,9 @@ def view_result(request, pk):
                     guesser.save()
 
         # is the current player out? (They still need to acknowledge the result)
-        if current_player.guessed_out:
-            redirect ('loser_page',pk=pk)
+        print (f'Current player guesswd out?{current_player.guessed_out}')
+        if current_player.guessed_out == True:
+            return redirect ('loser_page',pk=pk)
 
         # acknowledge that the current player has viewed the results
         current_player.has_acknowledged_result=True
