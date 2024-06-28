@@ -9,7 +9,7 @@ import random
 from random import shuffle
 
 # minimum numeber of players - bots will be created
-MIN_PLAYERS = 4
+MIN_PLAYERS = 6
 
 @registration_required
 def front_door(request):
