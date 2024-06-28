@@ -266,8 +266,14 @@ def view_result(request, pk):
     players = Player.objects.filter(game=game)
     current_player = players.get(name=request.session['player_name'])
     remaining_human_players = players.filter(game=game, bot=False, guessed_out=False )
-
-    # Winner?
+    
+    # now, is anyone guessed out? 
+    if current_player == guess.guesser:
+        if guess.correct:
+            guess.player.guessed_out = True
+            guess.player.save()
+        
+    # Is there a winner already?
     remaining_human_players = players.filter(game=game, bot=False, guessed_out=False )
     if remaining_human_players.count() == 1:
         players.update(has_acknowledged_winner=False)
@@ -276,15 +282,10 @@ def view_result(request, pk):
     # Once the results have been viewed, the player clicks OK to return here:
     if request.method=='POST':
 
-        # process the actual guess, if this player has made it
+        # if this player has made a guess by the form:
         if current_player == guess.guesser:
-  
-            # Is a player out?
-            if guess.correct:
-                guess.player.guessed_out = True
-                guess.player.save()
-                        
-            # Now a winner?
+                    
+            # Is there now a winner?
             remaining_human_players = players.filter(game=game, bot=False, guessed_out=False )
             if remaining_human_players.count() == 1:
                 players.update(has_acknowledged_winner=False)
@@ -305,10 +306,9 @@ def view_result(request, pk):
                     guesser.guessing = True
                     guesser.save()
 
-        # is the current player out? (They still need to acknowledge the result)
-        print (f'Current player guesswd out?{current_player.guessed_out}')
+        # redirect to loser page if out
         if current_player.guessed_out == True:
-            return redirect ('loser_page',pk=pk)
+            return redirect("loser_page",pk=pk)
 
         # acknowledge that the current player has viewed the results
         current_player.has_acknowledged_result=True
@@ -498,8 +498,9 @@ def loser_page(request, pk):
 
     if request.method == 'POST':
         
-        # acknowledge that the current player has viewed the results
+        # acknowledge that the current player has viewed the results (it's a white lie that they have acknpwledged the winner)
         current_player.has_acknowledged_result=True
+        current_player.has_acknowledged_winner=True
         current_player.save()
     
         # redirect them to spectate
