@@ -79,12 +79,14 @@
     {% endif %}
     <br>
 
+    {% if not current_player.guessed_out %}
     <form method="post">
         {% csrf_token %}     
         <button type="submit" class="standard-button">OK</button>
     </form>
+    {% endif %}
     
-    {% if current_player.has_acknowledged_result %}
+    {% if current_player.has_acknowledged_result or current_player.guessed_out %}
         <br><br>
         Waiting for the other guests to acknowledge
 

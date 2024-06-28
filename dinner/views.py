@@ -9,7 +9,7 @@ import random
 from random import shuffle
 
 # minimum numeber of players - bots will be created
-MIN_PLAYERS = 6
+MIN_PLAYERS = 4
 
 @registration_required
 def front_door(request):
@@ -265,7 +265,7 @@ def view_result(request, pk):
     # fetch the player objects
     players = Player.objects.filter(game=game)
     current_player = players.get(name=request.session['player_name'])
-    remaining_human_players = players.filter(game=game, bot=False, guessed_out=False )
+    remaining_human_players = players.filter(game=game, bot = False, guessed_out=False )
     
     # now, is anyone guessed out? 
     if current_player == guess.guesser:
@@ -274,7 +274,7 @@ def view_result(request, pk):
             guess.player.save()
         
     # Is there a winner already?
-    remaining_human_players = players.filter(game=game, bot=False, guessed_out=False )
+    remaining_human_players = players.filter(game=game, bot = False, guessed_out=False )
     if remaining_human_players.count() == 1:
         players.update(has_acknowledged_winner=False)
         return redirect('winner_page',pk=pk)
@@ -361,7 +361,7 @@ def spectate(request, pk):
     answers = Answer.objects.filter(question__game=game)
     remaining_answers = answers.filter(player__guessed_out=False)
     
-    if game.status == 'guess':
+    if game.status == 'guessing':
 
         context = {
             'current_player': current_player,
@@ -373,7 +373,7 @@ def spectate(request, pk):
 
         return render(request, 'dinner/spectate.html', context)
     
-    if game.status == 'viewing_results':
+    if game.status == 'viewing_result':
     
         answers = Answer.objects.filter(question__game=game).order_by('display_order')
 

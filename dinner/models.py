@@ -4,14 +4,14 @@ class Game(models.Model):
     GETQUESTION = 'get_question'
     LOBBY = 'lobby'
     GUESSING = 'guessing'
-    VIEWING = 'viewing_results'
+    VIEWING = 'viewing_result'
     FINISHED = 'finished'
     
     STATUS_CHOICES = [
         (GETQUESTION, 'Get_question'),
         (LOBBY, 'Lobby'),
         (GUESSING, 'Guessing'),
-        (VIEWING, 'Viewing_results'),
+        (VIEWING, 'Viewing_result'),
         (FINISHED, 'Finished'),
     ]
     
