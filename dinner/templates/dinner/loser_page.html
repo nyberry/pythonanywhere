@@ -10,7 +10,7 @@
         <a href="/">
             <img src="{% static 'images/spill.jpg' %}" class="img-fluid" alt="guessed out" style="width: 75%;">
         </a>
-        <form method="post" action="{% url 'spectate' game_id %}">
+        <form method="post">
             {% csrf_token %}
             <button type="submit" class="standard-button">OK</button>
         </form>

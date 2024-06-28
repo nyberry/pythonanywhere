@@ -303,8 +303,9 @@ def view_result(request, pk):
                 else:
                     eligible_players = remaining_human_players.exclude(name=current_player.name)
                     guesser = random.choice(eligible_players)
-                    guesser.guessing = True
-                    guesser.save()
+                
+                guesser.guessing = True
+                guesser.save()
 
         # redirect to loser page if out
         if current_player.guessed_out == True:
