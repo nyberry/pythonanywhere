@@ -373,7 +373,7 @@ def spectate(request, pk):
 
         return render(request, 'dinner/spectate.html', context)
     
-    if game.status == 'viewing_result':
+    if game.status == 'viewing_results':
     
         answers = Answer.objects.filter(question__game=game).order_by('display_order')
 
